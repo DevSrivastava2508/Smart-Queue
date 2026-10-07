@@ -19,17 +19,17 @@
   <!-- Tailwind CSS CDN with forms and container queries plugin -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
-  <!-- Google Fonts: Inter, Newsreader, and Azeret Mono for authentic thermal tickets -->
+  <!-- Google Fonts: Inter, Newsreader, Azeret Mono, Noto Sans Devanagari, Tamil & Malayalam -->
   <link href="https://fonts.googleapis.com" rel="preconnect"/>
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500;1,6..72,600&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500;1,6..72,600&amp;family=Noto+Sans+Devanagari:wght@400;500;600;700&amp;family=Noto+Sans+Tamil:wght@400;500;600;700&amp;family=Noto+Sans+Malayalam:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['Inter', 'Noto Sans Devanagari', 'Noto Sans Tamil', 'Noto Sans Malayalam', 'sans-serif'],
             serif: ['Newsreader', 'Georgia', 'serif'],
           },
           colors: {
@@ -284,13 +284,12 @@
       border-color: rgba(59, 130, 246, 0.35) !important;
     }
 
-    /* 10. Scroll Reveal Utilities */
+    /* 10. Scroll Reveal Utilities: Guaranteed 100% visible by default so content is NEVER hidden */
     .reveal-item {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-      will-change: opacity, transform;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .reveal-item.is-revealed {
       opacity: 1;
@@ -395,9 +394,11 @@
       border-color: #D0D5DD;
       border-radius: 4px;
     }
-    input[type="checkbox"]:checked {
-      background-color: #101828;
-      border-color: #101828;
+    /* Header responsive declutter rules */
+    @media (max-width: 639px) {
+      #pwaHeaderInstallBtn {
+        display: none !important;
+      }
     }
 
     /* Screens transition */
@@ -905,7 +906,7 @@
   </div>
 
   <!-- TOP NAVIGATION BAR (Visible on Steps 2, 3, 4, 5) -->
-  <header id="appNav" class="hidden w-full bg-white border-b border-[#E4E7EC] sticky top-0 z-50 backdrop-blur-md bg-white/95">
+  <header id="appNav" class="hidden w-full bg-white border-b border-[#E4E7EC] sticky top-0 z-[100] backdrop-blur-md bg-white/95 shadow-2xs">
     <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-16 flex items-center justify-between gap-4">
       
       <!-- Brand Logo -->
@@ -930,13 +931,24 @@
 
       <!-- Quick Action / Status -->
       <div class="flex items-center gap-2 sm:gap-3">
+        
+        <!-- Language Selector Dropdown (App Nav) -->
+        <div class="relative inline-block text-left" id="langSelectorAppWrap">
+          <button id="langSelectBtnApp" type="button" onclick="toggleLangDropdown('app', event)" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-950 bg-white hover:bg-slate-50 border border-[#D0D5DD] transition-colors shadow-xs cursor-pointer" aria-label="Change Language">
+            <span class="text-xs">🌐</span>
+            <span id="currentLangLabelApp" class="font-bold">English</span>
+            <svg id="langChevronApp" class="w-3 h-3 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="langDropdownApp" class="hidden absolute right-0 mt-2 w-52 rounded-2xl bg-white border border-slate-200 shadow-2xl py-1.5 z-[9999] transition-all text-xs divide-y divide-slate-100" style="background-color: #ffffff !important; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.18), 0 8px 10px -6px rgba(0,0,0,0.1) !important;"></div>
+        </div>
+
         <div id="navPatientBadge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-[#D0D5DD] text-xs font-semibold text-slate-800">
           <span class="w-2 h-2 rounded-full bg-blue-600"></span>
           <span id="navPatientName">Patient</span>
         </div>
         <button onclick="goToScreen(5)" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-[#D0D5DD] bg-white hover:bg-slate-50 transition-colors shadow-xs text-[#344054] flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="hidden sm:inline">Live Queue</span>
+          <span id="navLiveQueueLabel" class="hidden sm:inline">Live Queue</span>
         </button>
       </div>
 
@@ -946,57 +958,66 @@
   <!-- SCREEN 0: PREMIUM SMARTQUEUE HEALTHCARE LANDING PAGE -->
   <div class="screen visible w-full" id="screen0">
 
-    <!-- Top Landing Navigation Bar -->
-    <header class="w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 transition-all">
-      <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
+    <!-- Top Landing Navigation Bar (Sleek, De-congested, High-Hierarchy Design) -->
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-[100] transition-all">
+      <div class="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-17 flex items-center justify-between gap-4 sm:gap-6">
         
-        <!-- Brand Logo -->
-        <a href="#" onclick="goToScreen(0); return false;" class="inline-flex items-center gap-3 group">
-          <div class="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-white shadow-md shadow-slate-950/20 transition-transform group-hover:scale-105 shrink-0">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24">
+        <!-- Brand Logo (Single-line, Clean, Authoritative) -->
+        <a href="#" onclick="goToScreen(0); return false;" class="inline-flex items-center gap-2.5 group shrink-0" title="SmartQueue Home">
+          <div class="w-9 h-9 rounded-xl bg-slate-950 flex items-center justify-center text-white shadow-xs transition-transform group-hover:scale-105 shrink-0">
+            <svg class="w-4.5 h-4.5 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24">
               <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
             </svg>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-extrabold text-lg sm:text-xl text-slate-900 tracking-tight">SmartQueue</span>
-              <span class="hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">OPD Live</span>
-            </div>
-            <p class="text-[11px] text-slate-400 font-medium hidden sm:block">Digital Hospital & Clinic Queue System</p>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg text-slate-900 tracking-tight">SmartQueue</span>
+            <span class="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              OPD Live
+            </span>
           </div>
         </a>
 
-        <!-- Desktop Navigation Links -->
-        <nav class="hidden lg:flex items-center gap-7 text-sm font-semibold text-slate-600">
-          <a href="#how-it-works" class="hover:text-slate-950 transition-colors">How It Works</a>
-          <a href="#features-section" class="hover:text-slate-950 transition-colors">Features</a>
-          <a href="#hospitals-section" class="hover:text-slate-950 transition-colors">Hospitals</a>
-          <a href="#doctors-section" class="hover:text-slate-950 transition-colors">Specialists</a>
-          <a href="#faq-section" class="hover:text-slate-950 transition-colors">FAQ</a>
+        <!-- Desktop Navigation Links (Generous Spacing, Curated) -->
+        <nav class="hidden lg:flex items-center gap-8 text-[13px] font-semibold text-slate-600">
+          <a href="#doctors-section" data-i18n="nav_specialists" class="hover:text-slate-950 transition-colors">Specialists</a>
+          <a href="#hospitals-section" data-i18n="nav_hospitals" class="hover:text-slate-950 transition-colors">Hospitals</a>
+          <a href="#how-it-works" data-i18n="nav_how_it_works" class="hover:text-slate-950 transition-colors">How It Works</a>
+          <a href="#" onclick="goToScreen(5); return false;" class="hover:text-slate-950 transition-colors inline-flex items-center gap-1.5 text-slate-700 font-bold group">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span data-i18n="nav_live_queue">Live Queue</span>
+          </a>
+          <a href="#faq-section" data-i18n="nav_faq" class="hover:text-slate-950 transition-colors">FAQ</a>
         </nav>
 
-        <!-- Header Actions -->
-        <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Header Actions (Streamlined, Clear Hierarchy) -->
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+
+          <!-- Language Selector Pill (Desktop & Tablet; on phones it is in the mobile menu drawer) -->
+          <div class="relative hidden sm:inline-block text-left" id="langSelectorLandingWrap">
+            <button id="langSelectBtnLanding" type="button" onclick="toggleLangDropdown('landing', event)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-700 hover:text-slate-950 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 transition-colors cursor-pointer shadow-2xs" aria-label="Change Language">
+              <span class="text-xs">🌐</span>
+              <span id="currentLangLabelLanding" class="font-bold">English</span>
+              <svg id="langChevronLanding" class="w-3 h-3 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div id="langDropdownLanding" class="hidden absolute right-0 mt-2 w-52 rounded-2xl bg-white border border-slate-200 shadow-2xl py-1.5 z-[9999] transition-all text-xs divide-y divide-slate-100" style="background-color: #ffffff !important; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.18), 0 8px 10px -6px rgba(0,0,0,0.1) !important;"></div>
+          </div>
           
-          <!-- PWA Install App Button (Visible when PWA install is ready) -->
-          <button id="pwaHeaderInstallBtn" type="button" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors shadow-2xs">
-            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Install App</span>
+          <!-- PWA Install App Button (Strictly hidden until browser fires install prompt) -->
+          <button id="pwaHeaderInstallBtn" type="button" class="hidden items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition-colors shadow-2xs" title="Install SmartQueue App">
+            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="hidden sm:inline" data-i18n="nav_install">Install</span>
           </button>
 
-          <button type="button" onclick="goToScreen(5)" class="px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-1.5 sm:gap-2">
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span class="hidden sm:inline">Track</span> <span>Tokens</span>
+          <!-- Primary Call To Action (Book Appointment / Book Now) -->
+          <button type="button" onclick="goToScreen(1)" class="btn-shine-sweep px-3.5 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-bold text-white bg-slate-950 hover:bg-slate-800 shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 sm:gap-2 group shrink-0">
+            <span class="hidden sm:inline" data-i18n="nav_book_appt">Book Appointment</span>
+            <span class="sm:hidden" data-i18n="nav_book_now">Book Now</span>
+            <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
           </button>
 
-          <button type="button" onclick="goToScreen(1)" class="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-slate-950 hover:bg-slate-800 shadow-md shadow-slate-950/20 hover:shadow-lg transition-all flex items-center gap-1.5 sm:gap-2 group">
-            <span class="hidden sm:inline">Book Appointment</span>
-            <span class="sm:hidden">Book Now</span>
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-
-          <!-- Mobile Hamburger Menu Button (Phone & Tablet) -->
-          <button id="mobileMenuToggleBtn" type="button" onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors focus:outline-none" aria-label="Toggle navigation menu">
+          <!-- Mobile Hamburger Menu Button -->
+          <button id="mobileMenuToggleBtn" type="button" onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors focus:outline-none shrink-0" aria-label="Toggle navigation menu">
             <svg id="hamburgerIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
             <svg id="closeIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
@@ -1006,20 +1027,34 @@
 
       <!-- Mobile & Tablet Dropdown Navigation Menu -->
       <div id="mobileMenuDropdown" class="hidden lg:hidden border-t border-slate-200 bg-white/98 backdrop-blur-xl px-4 py-4 space-y-3 transition-all">
+        <!-- Mobile Language Selector Row -->
+        <div class="pb-3 border-b border-slate-100">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 px-1 flex items-center gap-1.5">
+            <span>🌐</span> <span id="mobileLangHeaderLabel">Select Language / भाषा चुनें</span>
+          </span>
+          <div class="grid grid-cols-2 gap-2" id="mobileLangPickerGrid"></div>
+        </div>
+
         <div class="flex flex-col space-y-1.5 text-sm font-semibold text-slate-700">
-          <a href="#how-it-works" onclick="toggleMobileMenu(false)" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">How It Works</a>
-          <a href="#features-section" onclick="toggleMobileMenu(false)" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Features</a>
-          <a href="#hospitals-section" onclick="toggleMobileMenu(false)" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Hospitals</a>
-          <a href="#doctors-section" onclick="toggleMobileMenu(false)" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Specialists</a>
-          <a href="#faq-section" onclick="toggleMobileMenu(false)" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">FAQ</a>
+          <a href="#doctors-section" onclick="toggleMobileMenu(false)" data-i18n="nav_specialists" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Specialists</a>
+          <a href="#hospitals-section" onclick="toggleMobileMenu(false)" data-i18n="nav_hospitals" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Hospitals</a>
+          <a href="#how-it-works" onclick="toggleMobileMenu(false)" data-i18n="nav_how_it_works" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">How It Works</a>
+          <a href="#" onclick="goToScreen(5); toggleMobileMenu(false); return false;" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-between text-slate-900 font-bold">
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span data-i18n="nav_live_queue">Live Queue</span>
+            </span>
+            <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold uppercase">OPD</span>
+          </a>
+          <a href="#faq-section" onclick="toggleMobileMenu(false)" data-i18n="nav_faq" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">FAQ</a>
         </div>
         <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
           <button id="pwaMobileMenuInstallBtn" type="button" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center gap-2">
             <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Install SmartQueue App</span>
+            <span data-i18n="nav_install">Install SmartQueue App</span>
           </button>
           <button onclick="goToScreen(1); toggleMobileMenu(false);" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-slate-950 hover:bg-slate-800 flex items-center justify-center gap-2 shadow-sm">
-            <span>Book Appointment &amp; Get Token</span>
+            <span data-i18n="nav_book_appt">Book Appointment &amp; Get Token</span>
           </button>
         </div>
       </div>
@@ -1045,20 +1080,20 @@
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
               </span>
-              <span>15,000+ OPD Queues Digitized • Zero Waiting Room Delays</span>
+              <span id="heroStatusPillText" data-i18n="hero_status_pill">15,000+ OPD Queues Digitized • Zero Waiting Room Delays</span>
             </div>
 
             <!-- Main Headline -->
-            <h1 class="hero-anim-title text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-slate-950 tracking-tight leading-[1.15] mb-6">
-              Skip The Crowded OPD.
-              <span class="block mt-1.5 animate-gradient-text">
+            <h1 class="hero-anim-title text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-slate-950 tracking-tight leading-[1.15] mb-6" id="heroMainTitle">
+              <span id="heroTitlePrefix">Skip The Crowded OPD.</span>
+              <span class="block mt-1.5 animate-gradient-text" id="heroTitleGradient">
                 Track Doctor Queues
               </span>
-              In Real-Time.
+              <span id="heroTitleSuffix">In Real-Time.</span>
             </h1>
 
             <!-- Subtitle -->
-            <p class="hero-anim-sub text-base sm:text-lg text-slate-600 leading-relaxed max-w-[620px] mb-8 font-normal">
+            <p class="hero-anim-sub text-base sm:text-lg text-slate-600 leading-relaxed max-w-[620px] mb-8 font-normal" id="heroMainSub" data-i18n-html="hero_sub">
               Book verified specialist appointments across premier institutions like <strong>AIIMS Rishikesh</strong> and <strong>Himalayan Institute</strong>. Monitor your live queue position directly from your phone, and arrive right when the doctor is ready for you.
             </p>
 
@@ -1068,16 +1103,16 @@
               <!-- Primary Booking CTA -->
               <button type="button" onclick="goToScreen(1)" class="btn-shine-sweep px-6 py-3.5 rounded-xl text-base font-bold text-white bg-slate-950 hover:bg-slate-800 shadow-lg shadow-slate-950/25 hover:shadow-xl transition-all flex items-center justify-center gap-2.5 group">
                 <svg class="w-5 h-5 text-amber-300" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                <span>Book Appointment & Get Token</span>
+                <span data-i18n="hero_cta_book">Book Appointment & Get Token</span>
                 <svg class="w-4 h-4 transition-transform group-hover:translate-x-1 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
               </button>
 
               <!-- Secondary AI Doctor CTA -->
-              <button type="button" onclick="toggleMediChat()" class="px-5 py-3.5 rounded-xl text-sm font-bold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300/80 shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-2 group">
+              <button id="heroAiChatBtn" type="button" onclick="toggleMediChat(true)" class="cursor-pointer px-5 py-3.5 rounded-xl text-sm font-bold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300/80 shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-2 group active:scale-98">
                 <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 transition-transform group-hover:scale-110">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 </span>
-                <span>Ask SmartQueue AI Assistant</span>
+                <span data-i18n="chat_title">Ask SmartQueue AI Assistant</span>
               </button>
 
             </div>
@@ -1088,10 +1123,10 @@
               <!-- Avatars -->
               <div class="flex items-center gap-2">
                 <div class="flex -space-x-2 overflow-hidden">
-                  <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&auto=format&fit=crop&q=80" alt="Dr. Priya"/>
-                  <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&auto=format&fit=crop&q=80" alt="Dr. Rohan"/>
-                  <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=100&auto=format&fit=crop&q=80" alt="Dr. Anita"/>
-                  <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=100&auto=format&fit=crop&q=80" alt="Dr. Suresh"/>
+                  <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="images/doctors/dr-priya-sharma.jpg" alt="Dr. Priya Sharma"/>
+                  <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="images/doctors/dr-rohan-mehta.jpg" alt="Dr. Rohan Mehta"/>
+                  <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="images/doctors/dr-anita-gupta.jpg" alt="Dr. Anita Gupta"/>
+                  <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="images/doctors/dr-suresh-verma.jpg" alt="Dr. Suresh Verma"/>
                 </div>
                 <div>
                   <div class="flex items-center text-amber-500 text-xs">
@@ -1145,7 +1180,7 @@
 
               <!-- Doctor Status & Info -->
               <div class="flex items-center gap-3.5 mb-6">
-                <img class="w-12 h-12 rounded-2xl object-cover border-2 border-slate-700 shadow-md" src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=160&auto=format&fit=crop&q=80" alt="Dr. Priya Sharma"/>
+                <img class="w-12 h-12 rounded-2xl object-cover border-2 border-slate-700 shadow-md" src="images/doctors/dr-priya-sharma.jpg" alt="Dr. Priya Sharma"/>
                 <div>
                   <h4 class="font-bold text-base text-white">Dr. Priya Sharma</h4>
                   <p class="text-xs text-blue-400 font-medium">General Medicine • Senior Consultant</p>
@@ -1600,7 +1635,7 @@
             <!-- Doctor 1 -->
             <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs hover:shadow-md transition-all text-center flex flex-col justify-between reveal-item reveal-delay-1 interactive-card">
               <div>
-                <img class="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-100 shadow-sm mb-4 transition-transform hover:scale-105 duration-300" src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=240&auto=format&fit=crop&q=80" alt="Dr. Priya Sharma"/>
+                <img class="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-100 shadow-sm mb-4 transition-transform hover:scale-105 duration-300" src="images/doctors/dr-priya-sharma.jpg" alt="Dr. Priya Sharma"/>
                 <h3 class="font-bold text-base text-slate-950">Dr. Priya Sharma</h3>
                 <span class="inline-block text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200 mt-1">General Physician</span>
                 <p class="text-xs text-slate-500 mt-2">12 yrs exp • AIIMS Rishikesh</p>
@@ -1618,7 +1653,7 @@
             <!-- Doctor 2 -->
             <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs hover:shadow-md transition-all text-center flex flex-col justify-between reveal-item reveal-delay-2 interactive-card">
               <div>
-                <img class="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-100 shadow-sm mb-4 transition-transform hover:scale-105 duration-300" src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=240&auto=format&fit=crop&q=80" alt="Dr. Rohan Mehta"/>
+                <img class="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-100 shadow-sm mb-4 transition-transform hover:scale-105 duration-300" src="images/doctors/dr-rohan-mehta.jpg" alt="Dr. Rohan Mehta"/>
                 <h3 class="font-bold text-base text-slate-950">Dr. Rohan Mehta</h3>
                 <span class="inline-block text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-md border border-rose-200 mt-1">Cardiologist</span>
                 <p class="text-xs text-slate-500 mt-2">15 yrs exp • Himalayan Inst.</p>
@@ -1636,7 +1671,7 @@
             <!-- Doctor 3 -->
             <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs hover:shadow-md transition-all text-center flex flex-col justify-between reveal-item reveal-delay-3 interactive-card">
               <div>
-                <img class="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-100 shadow-sm mb-4 transition-transform hover:scale-105 duration-300" src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=240&auto=format&fit=crop&q=80" alt="Dr. Anita Gupta"/>
+                <img class="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-100 shadow-sm mb-4 transition-transform hover:scale-105 duration-300" src="images/doctors/dr-anita-gupta.jpg" alt="Dr. Anita Gupta"/>
                 <h3 class="font-bold text-base text-slate-950">Dr. Anita Gupta</h3>
                 <span class="inline-block text-xs font-semibold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200 mt-1">Dermatologist</span>
                 <p class="text-xs text-slate-500 mt-2">9 yrs exp • Shivalik Hospital</p>
@@ -1654,7 +1689,7 @@
             <!-- Doctor 4 -->
             <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs hover:shadow-md transition-all text-center flex flex-col justify-between reveal-item reveal-delay-4 interactive-card">
               <div>
-                <img class="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-100 shadow-sm mb-4 transition-transform hover:scale-105 duration-300" src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=240&auto=format&fit=crop&q=80" alt="Dr. Suresh Verma"/>
+                <img class="w-24 h-24 rounded-full mx-auto object-cover border-4 border-slate-100 shadow-sm mb-4 transition-transform hover:scale-105 duration-300" src="images/doctors/dr-suresh-verma.jpg" alt="Dr. Suresh Verma"/>
                 <h3 class="font-bold text-base text-slate-950">Dr. Suresh Verma</h3>
                 <span class="inline-block text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 mt-1">Orthopedic</span>
                 <p class="text-xs text-slate-500 mt-2">18 yrs exp • Max Hospital</p>
@@ -1915,7 +1950,7 @@
           <!-- Back to Home Shortcut (Near SmartQueue) -->
           <button type="button" onclick="goToScreen(0)" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors border border-slate-200/60" title="Back to Landing Page">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-            <span>Back to Home</span>
+            <span data-i18n="s1_back_home">Back to Home</span>
           </button>
         </header>
 
@@ -1923,7 +1958,7 @@
         <div class="max-w-[480px] w-full mx-auto lg:mx-0 flex-grow flex flex-col justify-center">
           
           <!-- Headline -->
-          <h1 class="text-2xl sm:text-[28px] lg:text-[32px] font-semibold text-[#101828] leading-[1.25] tracking-tight mb-5">
+          <h1 data-i18n="s1_title" class="text-2xl sm:text-[28px] lg:text-[32px] font-semibold text-[#101828] leading-[1.25] tracking-tight mb-5">
             Get matched with the perfect specialist for your consultation
           </h1>
 
@@ -1933,24 +1968,24 @@
             <!-- Name Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-xs font-semibold text-[#344054] mb-1.5" for="fname">First name</label>
-                <input class="w-full px-3.5 py-2.5 text-sm text-[#101828] placeholder-[#667085] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="fname" placeholder="First name" required="" type="text"/>
+                <label data-i18n="form_fname" class="block text-xs font-semibold text-[#344054] mb-1.5" for="fname">First name</label>
+                <input data-i18n-placeholder="form_fname" class="w-full px-3.5 py-2.5 text-sm text-[#101828] placeholder-[#667085] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="fname" placeholder="First name" required="" type="text"/>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-[#344054] mb-1.5" for="lname">Last name</label>
-                <input class="w-full px-3.5 py-2.5 text-sm text-[#101828] placeholder-[#667085] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="lname" placeholder="Last name" required="" type="text"/>
+                <label data-i18n="form_lname" class="block text-xs font-semibold text-[#344054] mb-1.5" for="lname">Last name</label>
+                <input data-i18n-placeholder="form_lname" class="w-full px-3.5 py-2.5 text-sm text-[#101828] placeholder-[#667085] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="lname" placeholder="Last name" required="" type="text"/>
               </div>
             </div>
 
             <!-- Email -->
             <div>
-              <label class="block text-xs font-semibold text-[#344054] mb-1.5" for="email">Email</label>
-              <input class="w-full px-3.5 py-2.5 text-sm text-[#101828] placeholder-[#667085] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="email" placeholder="Your email address" type="email"/>
+              <label data-i18n="form_email" class="block text-xs font-semibold text-[#344054] mb-1.5" for="email">Email</label>
+              <input data-i18n-placeholder="form_email_placeholder" class="w-full px-3.5 py-2.5 text-sm text-[#101828] placeholder-[#667085] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="email" placeholder="Your email address" type="email"/>
             </div>
 
             <!-- Phone Number -->
             <div>
-              <label class="block text-xs font-semibold text-[#344054] mb-1.5" for="phone">Phone number</label>
+              <label data-i18n="form_phone" class="block text-xs font-semibold text-[#344054] mb-1.5" for="phone">Phone number</label>
               <div class="relative flex rounded-lg shadow-xs border border-[#D0D5DD] focus-within:ring-2 focus-within:ring-slate-900/10 focus-within:border-slate-900 bg-white">
                 <button aria-label="Select country" class="flex items-center gap-1.5 pl-3 pr-2 py-2.5 text-sm text-[#101828] font-medium border-r border-[#D0D5DD] hover:bg-slate-50 transition-colors rounded-l-lg shrink-0" type="button">
                   <span>IN</span>
@@ -1965,20 +2000,20 @@
             <!-- Age, Gender, Blood Group Row -->
             <div class="grid grid-cols-3 gap-2.5">
               <div>
-                <label class="block text-xs font-semibold text-[#344054] mb-1.5" for="age">Age</label>
-                <input class="w-full px-3 py-2 text-sm text-[#101828] placeholder-[#667085] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="age" min="1" max="120" placeholder="Age" required="" type="number"/>
+                <label data-i18n="form_age" class="block text-xs font-semibold text-[#344054] mb-1.5" for="age">Age</label>
+                <input data-i18n-placeholder="form_age" class="w-full px-3 py-2 text-sm text-[#101828] placeholder-[#667085] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="age" min="1" max="120" placeholder="Age" required="" type="number"/>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-[#344054] mb-1.5" for="gender">Gender</label>
+                <label data-i18n="form_gender" class="block text-xs font-semibold text-[#344054] mb-1.5" for="gender">Gender</label>
                 <select class="w-full px-2 py-2 text-xs sm:text-sm text-[#101828] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="gender" required="">
                   <option value="">Gender</option>
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-[#344054] mb-1.5" for="blood">Blood</label>
+                <label data-i18n="form_blood" class="block text-xs font-semibold text-[#344054] mb-1.5" for="blood">Blood</label>
                 <select class="w-full px-2 py-2 text-xs sm:text-sm text-[#101828] bg-white border border-[#D0D5DD] rounded-lg shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors" id="blood">
                   <option value="">(Opt)</option>
                   <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
@@ -1990,7 +2025,7 @@
             <!-- Submit Button -->
             <div class="pt-2">
               <button class="w-full bg-[#1e232c] hover:bg-black text-white font-medium py-3 px-4 rounded-xl text-sm transition-all duration-200 shadow-sm active:scale-[0.99] flex items-center justify-center cursor-pointer" type="submit">
-                Get matched
+                <span data-i18n="btn_get_matched">Get matched</span>
               </button>
             </div>
           </form>
@@ -2109,24 +2144,24 @@
       
       <div class="text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Step 2 of 4</span>
-          <h2 class="text-2xl sm:text-3xl font-bold text-[#101828] tracking-tight mt-1">Health Concern &amp; Hospital</h2>
-          <p class="text-sm text-[#475467] mt-1">Describe symptoms and select hospital<span class="active-patient-label-wrap"></span>.</p>
+          <span data-i18n="s2_badge" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Step 2 of 4</span>
+          <h2 data-i18n="s2_title" class="text-2xl sm:text-3xl font-bold text-[#101828] tracking-tight mt-1">Health Concern &amp; Hospital</h2>
+          <p class="text-sm text-[#475467] mt-1"><span data-i18n="s2_subtitle">Describe symptoms and select hospital</span><span class="active-patient-label-wrap"></span>.</p>
         </div>
         <button onclick="goToScreen(1)" class="text-xs font-medium text-[#475467] hover:text-[#101828] underline underline-offset-4 self-start sm:self-auto">
-          ← Back to Patient Info
+          <span data-i18n="btn_back_intake">← Back to Patient Info</span>
         </button>
       </div>
 
       <!-- Health Concern & Specialization Card (Shifted to Step 2) -->
       <div class="bg-white rounded-2xl p-5 sm:p-6 border border-[#E4E7EC] shadow-xs space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-1.5" for="problem">Health Concern / Symptoms *</label>
-          <textarea class="w-full px-3.5 py-2.5 text-sm text-[#101828] placeholder-[#667085] bg-slate-50/60 border border-[#D0D5DD] rounded-xl shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors resize-none leading-relaxed" id="problem" placeholder="Describe symptoms (e.g. fever for 2 days, backache, skin rash, persistent headache...)" rows="3" required></textarea>
+          <label data-i18n="s2_concern_label" class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-1.5" for="problem">Health Concern / Symptoms *</label>
+          <textarea data-i18n-placeholder="s2_concern_placeholder" class="w-full px-3.5 py-2.5 text-sm text-[#101828] placeholder-[#667085] bg-slate-50/60 border border-[#D0D5DD] rounded-xl shadow-xs focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors resize-none leading-relaxed" id="problem" placeholder="Describe symptoms (e.g. fever for 2 days, backache, skin rash, persistent headache...)" rows="3" required></textarea>
         </div>
 
         <div>
-          <span class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-2.5">Specialization Needed</span>
+          <span data-i18n="s2_spec_needed" class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-2.5">Specialization Needed</span>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
             <label class="flex items-center gap-2 cursor-pointer select-none p-2.5 rounded-xl border border-[#E4E7EC] bg-white hover:bg-slate-50 transition-colors">
               <input class="w-4 h-4 text-slate-900 border-[#D0D5DD] focus:ring-slate-900 spec-radio" name="specialty" type="radio" value="General Physician" checked onchange="updateSpecFromCheckbox(this.value)"/>
@@ -2159,8 +2194,8 @@
       <!-- Choose Hospital Section -->
       <div class="bg-white rounded-2xl p-5 sm:p-6 border border-[#E4E7EC] shadow-xs space-y-4">
         <div>
-          <span class="text-xs font-semibold uppercase tracking-wider text-[#344054] block">Available Hospitals *</span>
-          <p class="text-xs text-[#475467] mt-0.5">Select the hospital nearest to you or preferred for your doctor visit.</p>
+          <span data-i18n="s2_avail_hosp" class="text-xs font-semibold uppercase tracking-wider text-[#344054] block">Available Hospitals *</span>
+          <p data-i18n="s2_avail_hosp_desc" class="text-xs text-[#475467] mt-0.5">Select the hospital nearest to you or preferred for your doctor visit.</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="hospitalGrid">
           <!-- Hospital Cards Rendered by JS -->
@@ -2169,11 +2204,10 @@
 
       <div class="flex items-center justify-between gap-4 pt-4 border-t border-[#E4E7EC]">
         <button onclick="goToScreen(1)" class="px-5 py-2.5 rounded-xl border border-[#D0D5DD] bg-white text-[#344054] text-sm font-medium hover:bg-slate-50 transition-colors">
-          ← Back to Patient Info
+          <span data-i18n="btn_back_intake">← Back to Patient Info</span>
         </button>
         <button onclick="selectHospital()" class="px-6 py-2.5 rounded-xl bg-[#101828] hover:bg-black text-white text-sm font-medium shadow-sm transition-transform active:scale-[0.99] flex items-center gap-2">
-          <span>Continue to Select Doctor</span>
-          <span>→</span>
+          <span data-i18n="btn_to_doctor">Continue to Select Doctor →</span>
         </button>
       </div>
 
@@ -2187,12 +2221,12 @@
       
       <div class="mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Step 3 of 4</span>
-          <h2 class="text-2xl sm:text-3xl font-bold text-[#101828] tracking-tight mt-1">Select Your Specialist</h2>
-          <p class="text-sm text-[#475467] mt-1">Review doctors and availability<span class="active-patient-label-wrap"></span>.</p>
+          <span data-i18n="s3_badge" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Step 3 of 4</span>
+          <h2 data-i18n="s3_title" class="text-2xl sm:text-3xl font-bold text-[#101828] tracking-tight mt-1">Select Your Specialist</h2>
+          <p class="text-sm text-[#475467] mt-1"><span data-i18n="s3_subtitle">Review doctors and availability</span><span class="active-patient-label-wrap"></span>.</p>
         </div>
         <button onclick="goToScreen(2)" class="text-xs font-medium text-[#475467] hover:text-[#101828] underline underline-offset-4 self-start sm:self-auto">
-          ← Back to Hospital
+          <span data-i18n="btn_back_hosp">← Back to Hospital</span>
         </button>
       </div>
 
@@ -2200,11 +2234,11 @@
       <div class="bg-white rounded-2xl p-5 sm:p-6 border border-[#E4E7EC] shadow-xs mb-6">
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div class="flex-1">
-            <span class="text-xs font-semibold uppercase text-slate-400 block mb-1">Your Problem / Symptoms</span>
+            <span data-i18n="s3_problem_label" class="text-xs font-semibold uppercase text-slate-400 block mb-1">Your Problem / Symptoms</span>
             <p id="problemDisplay" class="text-sm font-medium text-[#101828] italic">No description provided yet.</p>
           </div>
           <div class="sm:w-64">
-            <label class="block text-xs font-semibold text-[#344054] mb-1">Filter by Specialization</label>
+            <label data-i18n="s3_filter_label" class="block text-xs font-semibold text-[#344054] mb-1">Filter by Specialization</label>
             <select id="specFilter" onchange="filterDoctors()" class="w-full px-3 py-2 text-xs sm:text-sm text-[#101828] bg-slate-50 border border-[#D0D5DD] rounded-lg">
               <option value="">All Specializations</option>
               <option>General Physician</option>
@@ -2226,11 +2260,10 @@
 
       <div class="mt-8 flex items-center justify-between gap-4 pt-6 border-t border-[#E4E7EC]">
         <button onclick="goToScreen(2)" class="px-5 py-2.5 rounded-xl border border-[#D0D5DD] bg-white text-[#344054] text-sm font-medium hover:bg-slate-50 transition-colors">
-          ← Back
+          <span data-i18n="btn_back">← Back</span>
         </button>
         <button onclick="selectDoctor()" class="px-6 py-2.5 rounded-xl bg-[#101828] hover:bg-black text-white text-sm font-medium shadow-sm transition-transform active:scale-[0.99] flex items-center gap-2">
-          <span>Continue to Book Slot</span>
-          <span>→</span>
+          <span data-i18n="btn_to_slot">Continue to Book Slot →</span>
         </button>
       </div>
 
@@ -2244,12 +2277,12 @@
       
       <div class="mb-8 text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Step 4 of 4</span>
-          <h2 class="text-2xl sm:text-3xl font-bold text-[#101828] tracking-tight mt-1">Pick a Date &amp; Time Slot</h2>
-          <p class="text-sm text-[#475467] mt-1">Select date and available consultation time<span class="active-patient-label-wrap"></span>.</p>
+          <span data-i18n="s4_badge" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Step 4 of 4</span>
+          <h2 data-i18n="s4_title" class="text-2xl sm:text-3xl font-bold text-[#101828] tracking-tight mt-1">Pick a Date &amp; Time Slot</h2>
+          <p class="text-sm text-[#475467] mt-1"><span data-i18n="s4_subtitle">Select date and available consultation time</span><span class="active-patient-label-wrap"></span>.</p>
         </div>
         <button onclick="goToScreen(3)" class="text-xs font-medium text-[#475467] hover:text-[#101828] underline underline-offset-4 self-start sm:self-auto">
-          ← Back to Doctor
+          <span data-i18n="btn_back_doc">← Back to Doctor</span>
         </button>
       </div>
 
@@ -2262,7 +2295,7 @@
         
         <!-- Date Row -->
         <div>
-          <span class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-3">Select Date</span>
+          <span data-i18n="s4_select_date" class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-3">Select Date</span>
           <div class="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none" id="dateRow">
             <!-- Rendered by JS -->
           </div>
@@ -2272,7 +2305,7 @@
 
         <!-- Morning Slots -->
         <div>
-          <span class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-3">Morning Slots (09:00 AM - 11:30 AM)</span>
+          <span data-i18n="s4_morning_slots" class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-3">Morning Slots (09:00 AM - 11:30 AM)</span>
           <div class="grid grid-cols-3 sm:grid-cols-6 gap-2.5" id="slotsAM">
             <!-- AM slots rendered by JS -->
           </div>
@@ -2280,7 +2313,7 @@
 
         <!-- Afternoon Slots -->
         <div>
-          <span class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-3">Afternoon Slots (12:00 PM - 05:00 PM)</span>
+          <span data-i18n="s4_afternoon_slots" class="block text-xs font-semibold text-[#344054] uppercase tracking-wider mb-3">Afternoon Slots (12:00 PM - 05:00 PM)</span>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="slotsPM">
             <!-- PM slots rendered by JS -->
           </div>
@@ -2290,10 +2323,10 @@
 
       <div class="mt-8 flex items-center justify-between gap-4 pt-6 border-t border-[#E4E7EC]">
         <button onclick="goToScreen(3)" class="px-5 py-2.5 rounded-xl border border-[#D0D5DD] bg-white text-[#344054] text-sm font-medium hover:bg-slate-50 transition-colors">
-          ← Back
+          <span data-i18n="btn_back">← Back</span>
         </button>
         <button onclick="bookAppointment()" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-medium shadow-sm transition-transform active:scale-[0.99] flex items-center gap-2">
-          <span>✅ Confirm Appointment &amp; Token</span>
+          <span data-i18n="btn_confirm_booking">✅ Confirm Appointment &amp; Token</span>
         </button>
       </div>
 
@@ -2305,25 +2338,15 @@
   <div class="screen w-full py-8 px-4 sm:px-6 lg:px-8" id="screen5">
     <div class="max-w-4xl mx-auto">
       
-      <!-- Success Banner -->
-      <div id="successBanner" class="hidden bg-emerald-50 border border-emerald-200 rounded-3xl p-6 sm:p-8 text-center mb-8 shadow-xs">
-        <div class="w-14 h-14 mx-auto rounded-full bg-emerald-100 text-emerald-800 text-2xl flex items-center justify-center mb-3">
-          🎉
-        </div>
-        <h2 class="text-2xl font-bold text-emerald-950 tracking-tight">Appointment Confirmed!</h2>
-        <p class="text-sm text-emerald-800 mt-1 max-w-md mx-auto">
-          Your digital queue token has been generated. We have dispatched a confirmation to your contact details.
-        </p>
-      </div>
 
       <!-- Interactive Thermal Ticket Dispenser -->
       <div id="ticketPrinterContainer" class="hidden flex flex-col items-center justify-center pt-8 pb-32 mb-10 bg-gradient-to-b from-slate-50/90 via-white to-slate-50/50 rounded-3xl border border-[#E4E7EC] shadow-xs relative overflow-visible">
         <div class="text-center mb-8 px-4">
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 mb-2 border border-emerald-200">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span> Official Digital OPD Token
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span> <span data-i18n="s5_dispenser_badge">Official Digital OPD Token</span>
           </span>
-          <h3 class="text-xl sm:text-2xl font-bold text-[#101828] tracking-tight">Patient Appointment Ticket Dispenser</h3>
-          <p class="text-xs text-[#475467] mt-1">Press the dispenser button <span class="font-semibold text-slate-900">🖨</span> to print and dispense your patient consultation pass.</p>
+          <h3 data-i18n="s5_dispenser_title" class="text-xl sm:text-2xl font-bold text-[#101828] tracking-tight">Patient Appointment Ticket Dispenser</h3>
+          <p data-i18n="s5_dispenser_desc" class="text-xs text-[#475467] mt-1">Press the dispenser button to print and dispense your patient consultation pass.</p>
         </div>
 
         <div id="printerMount" class="w-full flex justify-center overflow-visible min-h-[500px]">
@@ -2333,22 +2356,22 @@
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3 z-10 px-4">
           <button type="button" onclick="triggerReceiptPrint()" class="px-4 py-2.5 rounded-xl bg-[#101828] hover:bg-black text-white text-xs font-medium transition-all flex items-center gap-2 shadow-xs cursor-pointer active:scale-95">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-            <span>Print / Save Ticket (PDF)</span>
+            <span data-i18n="btn_print_pdf">Print / Save Ticket (PDF)</span>
           </button>
           <button type="button" onclick="replayPrinterAnimation()" class="px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
-            <span>Re-dispense Ticket</span>
+            <span data-i18n="btn_redispense">Re-dispense Ticket</span>
           </button>
         </div>
       </div>
 
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-[#101828] tracking-tight">My Appointments &amp; Queue</h2>
-          <p class="text-sm text-[#475467] mt-0.5">Real-time status for your hospital visits.</p>
+          <h2 data-i18n="s5_my_appts_title" class="text-2xl sm:text-3xl font-bold text-[#101828] tracking-tight">My Appointments &amp; Queue</h2>
+          <p data-i18n="s5_my_appts_sub" class="text-sm text-[#475467] mt-0.5">Real-time status for your hospital visits.</p>
         </div>
         <button onclick="goToScreen(1)" class="px-4 py-2 rounded-xl bg-[#101828] text-white text-xs sm:text-sm font-medium hover:bg-black transition-colors flex items-center gap-1.5 shadow-xs">
-          <span>+ New Appointment</span>
+          <span data-i18n="btn_new_appt">+ New Appointment</span>
         </button>
       </div>
 
@@ -2374,16 +2397,27 @@
     <div class="bg-[#101828] p-4 flex items-center gap-3 text-white">
       <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg shrink-0">🩺</div>
       <div class="flex-1 min-w-0">
-        <h3 class="font-semibold text-sm truncate">SmartQueue AI Assistant</h3>
+        <h3 class="font-semibold text-sm truncate" id="medi-chat-header-title">SmartQueue AI Assistant</h3>
         <p class="text-xs text-slate-300 flex items-center gap-1.5 mt-0.5 truncate">
           <span class="inline-flex items-center gap-1 text-emerald-400 shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 24/7
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> <span id="medi-chat-247-label">24/7</span>
           </span>
           <span>·</span>
-          <span class="truncate">Patient: <strong class="text-white font-semibold" id="medi-chat-patient-name">Guest</strong></span>
+          <span class="truncate"><span id="medi-chat-patient-prefix">Patient:</span> <strong class="text-white font-semibold" id="medi-chat-patient-name">Guest</strong></span>
         </p>
       </div>
-      <button class="ml-auto text-white/70 hover:text-white text-lg p-2 rounded-lg hover:bg-white/10 shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors" id="medi-chat-close" aria-label="Close Assistant">✕</button>
+
+      <!-- Chat Language Selector Pill -->
+      <div class="relative shrink-0" id="medi-chat-lang-wrap">
+        <button id="medi-chat-lang-btn" onclick="toggleChatLangMenu(event)" type="button" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold flex items-center gap-1 border border-white/20 transition-colors cursor-pointer" title="Switch Language">
+          <span>🌐</span>
+          <span id="medi-chat-lang-label">EN</span>
+          <svg class="w-3 h-3 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="medi-chat-lang-menu" class="hidden absolute right-0 top-full mt-1.5 w-40 bg-slate-900/98 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 z-50 text-[11px] text-white"></div>
+      </div>
+
+      <button class="text-white/70 hover:text-white text-lg p-2 rounded-lg hover:bg-white/10 shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors" id="medi-chat-close" aria-label="Close Assistant">✕</button>
     </div>
 
     <div class="flex-1 overflow-y-auto p-4 space-y-3 max-h-[380px] text-xs leading-relaxed" id="medi-chat-messages"></div>
@@ -2445,6 +2479,860 @@
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwwnkhRldThKqxHIpsB1iOB2YaHSLC9A1JKwh0yGlx9p-YRJJAKLLcWSO0jluXcWitI/exec";
 
 
+    // ══════════════════════════════════════════════════════════════
+    //  MULTI-LANGUAGE (i18n) SYSTEM: EN, HI, TA, ML
+    // ══════════════════════════════════════════════════════════════
+    const SUPPORTED_LANGUAGES = [
+      { code: 'en', name: 'English', native: 'English', flag: '🇬🇧', speechLang: 'en-IN' },
+      { code: 'hi', name: 'Hindi', native: 'हिन्दी', flag: '🇮🇳', speechLang: 'hi-IN' },
+      { code: 'ta', name: 'Tamil', native: 'தமிழ்', flag: '🇮🇳', speechLang: 'ta-IN' },
+      { code: 'ml', name: 'Malayalam', native: 'മലയാളം', flag: '🇮🇳', speechLang: 'ml-IN' }
+    ];
+
+    const I18N_DATA = {
+      en: {
+        nav_how_it_works: "How It Works",
+        nav_features: "Features",
+        nav_hospitals: "Hospitals",
+        nav_specialists: "Specialists",
+        nav_faq: "FAQ",
+        nav_install: "Install App",
+        nav_track: "Track",
+        nav_tokens: "Tokens",
+        nav_book_appt: "Book Appointment",
+        nav_book_now: "Book Now",
+        nav_live_queue: "Live Queue",
+        nav_patient_prefix: "Patient",
+        nav_guest: "Guest",
+        step_home: "Home",
+        step_intake: "1. Intake",
+        step_hospital: "2. Hospital",
+        step_doctor: "3. Doctor",
+        step_slot: "4. Slot",
+        step_token: "5. Token",
+        mobile_lang_title: "Select Language / भाषा चुनें",
+
+        hero_status_pill: "15,000+ OPD Queues Digitized • Zero Waiting Room Delays",
+        hero_title_prefix: "Skip The Crowded OPD.",
+        hero_title_gradient: "Track Doctor Queues",
+        hero_title_suffix: "In Real-Time.",
+        hero_sub: "Book verified specialist appointments across premier institutions like <strong>AIIMS Rishikesh</strong> and <strong>Himalayan Institute</strong>. Monitor your live queue position directly from your phone, and arrive right when the doctor is ready for you.",
+        hero_cta_book: "Book Appointment & Get Token",
+        chat_title: "Ask SmartQueue AI Assistant",
+
+        s1_badge: "Step 1 of 4 · Patient Registration",
+        s1_title: "Get matched with the perfect specialist for your consultation",
+        s1_back_home: "Back to Home",
+        form_fname: "First name",
+        form_lname: "Last name",
+        form_email: "Email",
+        form_email_placeholder: "Your email address",
+        form_phone: "Phone number",
+        form_age: "Age",
+        form_gender: "Gender",
+        gender_select: "Gender",
+        gender_male: "Male",
+        gender_female: "Female",
+        gender_other: "Other",
+        form_blood: "Blood",
+        btn_get_matched: "Get matched",
+
+        s2_badge: "Step 2 of 4",
+        s2_title: "Health Concern & Hospital",
+        s2_subtitle: "Describe symptoms and select hospital",
+        s2_concern_label: "Health Concern / Symptoms *",
+        s2_concern_placeholder: "Describe symptoms (e.g. fever for 2 days, backache, skin rash, persistent headache...)",
+        s2_spec_needed: "Specialization Needed",
+        s2_avail_hosp: "Available Hospitals *",
+        s2_avail_hosp_desc: "Select the hospital nearest to you or preferred for your doctor visit.",
+        btn_back_intake: "← Back to Patient Info",
+        btn_to_doctor: "Continue to Select Doctor →",
+
+        s3_badge: "Step 3 of 4",
+        s3_title: "Select Your Specialist",
+        s3_subtitle: "Review doctors and availability",
+        btn_back_hosp: "← Back to Hospital",
+        s3_problem_label: "Your Problem / Symptoms",
+        s3_filter_label: "Filter by Specialization",
+        s3_all_spec: "All Specializations",
+        s3_no_docs: "No doctors found for this filter. Please choose another specialization.",
+        btn_to_slot: "Continue to Book Slot →",
+
+        s4_badge: "Step 4 of 4",
+        s4_title: "Pick a Date & Time Slot",
+        s4_subtitle: "Select date and available consultation time",
+        btn_back_doc: "← Back to Doctor",
+        s4_select_date: "Select Date",
+        s4_morning_slots: "Morning Slots (09:00 AM - 11:30 AM)",
+        s4_afternoon_slots: "Afternoon Slots (12:00 PM - 05:00 PM)",
+        btn_confirm_booking: "✅ Confirm Appointment & Token",
+
+        s5_confirmed_title: "Appointment Confirmed!",
+        s5_confirmed_sub: "Your digital queue token has been generated. We have dispatched a confirmation to your contact details.",
+        s5_dispenser_badge: "Official Digital OPD Token",
+        s5_dispenser_title: "Patient Appointment Ticket Dispenser",
+        s5_dispenser_desc: "Press the dispenser button 🖨 to print and dispense your patient consultation pass.",
+        btn_print_pdf: "Print / Save Ticket (PDF)",
+        btn_redispense: "Re-dispense Ticket",
+        s5_my_appts_title: "My Appointments & Queue",
+        s5_my_appts_sub: "Real-time status for your hospital visits.",
+        btn_new_appt: "+ New Appointment",
+        s5_no_appts: "No appointments booked yet",
+        s5_no_appts_sub: "Book your first doctor consultation to generate a digital queue token.",
+
+        ticket_click_print: "Click to print",
+        ticket_token_desk: "OPD Token Desk",
+        ticket_token_no: "TOKEN NO.",
+        ticket_consult_pass: "PATIENT CONSULTATION PASS",
+        ticket_patient: "Patient:",
+        ticket_age_gender: "Age / Gender:",
+        ticket_contact: "Contact:",
+        ticket_blood: "Blood Group:",
+        ticket_doctor: "Doctor:",
+        ticket_specialty: "Specialty:",
+        ticket_concern: "Concern:",
+        ticket_counter: "Desk Counter:",
+        ticket_counter_val: "Counter #3 (OPD)",
+        ticket_fee: "Token Fee:",
+        ticket_fee_val: "₹0.00 (Free Token)",
+        ticket_status: "Queue Status:",
+        ticket_status_val: "CONFIRMED & ACTIVE",
+        ticket_notice: "Please report to OPD Counter 10 mins before slot.",
+        ticket_wish: "Wishing you a speedy recovery! · SmartQueue",
+        ticket_view_print: "View & Print Ticket",
+        ticket_cancel: "Cancel Ticket",
+        confirm_cancel_appt: "Are you sure you want to cancel this appointment ticket?",
+        ticket_maps: "Google Maps",
+        ticket_live_active: "Live Queue Active",
+        ticket_expected: "Expected on-time",
+        ticket_booked_for: "Booked for",
+
+        badge_govt: "Government",
+        badge_private: "Private",
+        badge_multi: "Multi-Specialty",
+        badge_clinic: "Clinic",
+        badge_eye: "Eye Specialist",
+        badge_general: "General",
+        wait_prefix: "Wait:",
+        avail_now: "Available Now",
+        avail_in: "Available in",
+
+        spec_gp: "General Physician",
+        spec_cardio: "Cardiologist",
+        spec_derma: "Dermatologist",
+        spec_ortho: "Orthopedic",
+        spec_pedia: "Pediatrician",
+        spec_ent: "ENT Specialist",
+        spec_neuro: "Neurologist",
+
+        days_short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+        months_short: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+
+        chat_header_title: "SmartQueue AI Assistant",
+        chat_247: "24/7",
+        chat_placeholder: "Ask about symptoms, doctors, hospitals...",
+        chat_listening: "🎙️ Listening... Speak now",
+        chat_thinking: "SmartQueue AI is thinking...",
+        chat_greeting: "Hello! 👋 I'm your SmartQueue Assistant. I can help you pick the right specialist, check hospital timings, or navigate queue tokens. How can I help you today?",
+        chat_greeting_with_name: "Hello {name}! 👋 I'm your SmartQueue Assistant. I can help you pick the right specialist, check hospital timings, or navigate queue tokens. How can I help you today?",
+        chat_quick_replies: ["Check my name & token", "Which doctor for fever?", "Hospital in Dehradun", "Queue wait times"],
+        chat_offline_msg: "Could not reach the SmartQueue AI service. Please make sure the server is started with 'npm start' on port 8080.",
+        chat_speech_unsupported: "Speech recognition is not supported in this browser. Please try Chrome.",
+        btn_back: "← Back"
+      },
+      hi: {
+        nav_how_it_works: "यह कैसे काम करता है",
+        nav_features: "विशेषताएँ",
+        nav_hospitals: "अस्पताल",
+        nav_specialists: "विशेषज्ञ",
+        nav_faq: "सामान्य प्रश्न",
+        nav_install: "ऐप इंस्टॉल करें",
+        nav_track: "ट्रैक करें",
+        nav_tokens: "टोकन",
+        nav_book_appt: "अपॉइंटमेंट बुक करें",
+        nav_book_now: "अभी बुक करें",
+        nav_live_queue: "लाइव कतार",
+        nav_patient_prefix: "मरीज",
+        nav_guest: "अतिथि",
+        step_home: "होम",
+        step_intake: "1. विवरण",
+        step_hospital: "2. अस्पताल",
+        step_doctor: "3. डॉक्टर",
+        step_slot: "4. समय",
+        step_token: "5. टोकन",
+        mobile_lang_title: "भाषा चुनें / Select Language",
+
+        hero_status_pill: "15,000+ ओपीडी कतारें डिजिटल • शून्य प्रतीक्षा समय",
+        hero_title_prefix: "भीड़भाड़ वाले ओपीडी से बचें।",
+        hero_title_gradient: "डॉक्टर कतार ट्रैक करें",
+        hero_title_suffix: "रीयल-टाइम में।",
+        hero_sub: "<strong>एम्स ऋषिकेश</strong> और <strong>हिमालयन इंस्टीट्यूट</strong> जैसे प्रमुख संस्थानों में सत्यापित विशेषज्ञ डॉक्टरों के साथ अपॉइंटमेंट बुक करें। सीधे अपने फोन से लाइव कतार की स्थिति देखें।",
+        hero_cta_book: "अपॉइंटमेंट बुक करें और टोकन पाएं",
+        chat_title: "SmartQueue AI सहायक से पूछें",
+
+        s1_badge: "चरण 1/4 · रोगी पंजीकरण",
+        s1_title: "अपने परामर्श के लिए सही विशेषज्ञ डॉक्टर से मिलें",
+        s1_back_home: "होम पेज पर लौटें",
+        form_fname: "पहला नाम",
+        form_lname: "अंतिम नाम",
+        form_email: "ईमेल पता",
+        form_email_placeholder: "आपका ईमेल पता",
+        form_phone: "फ़ोन नंबर",
+        form_age: "आयु (वर्ष)",
+        form_gender: "लिंग",
+        gender_select: "लिंग चुनें",
+        gender_male: "पुरुष",
+        gender_female: "महिला",
+        gender_other: "अन्य",
+        form_blood: "रक्त समूह",
+        btn_get_matched: "विशेषज्ञ खोजें",
+
+        s2_badge: "चरण 2/4",
+        s2_title: "स्वास्थ्य संस्थान और अस्पताल चुनें",
+        s2_subtitle: "सत्यापित साझेदार अस्पतालों और विशेषज्ञ क्लीनिकों में से चुनें।",
+        s2_concern_label: "स्वास्थ्य समस्या / लक्षण *",
+        s2_concern_placeholder: "लक्षण बताएं (उदा. 2 दिनों से तेज बुखार, सीने में दर्द, त्वचा पर चकत्ते, सिरदर्द...)",
+        s2_spec_needed: "आवश्यक विशेषज्ञता",
+        s2_avail_hosp: "उपलब्ध अस्पताल *",
+        s2_avail_hosp_desc: "अपने सबसे नजदीकी या पसंदीदा अस्पताल का चयन करें।",
+        btn_back_intake: "← मरीज विवरण पर वापस",
+        btn_to_doctor: "डॉक्टर चुनने के लिए आगे बढ़ें →",
+
+        s3_badge: "चरण 3/4",
+        s3_title: "अपने विशेषज्ञ डॉक्टर का चयन करें",
+        s3_subtitle: "डॉक्टर की उपलब्धता और ओपीडी समय देखें।",
+        btn_back_hosp: "← अस्पताल पर वापस",
+        s3_problem_label: "आपकी समस्या / लक्षण",
+        s3_filter_label: "विशेषज्ञता द्वारा फ़िल्टर करें",
+        s3_all_spec: "सभी विशेषज्ञताएं",
+        s3_no_docs: "इस फ़िल्टर के लिए कोई डॉक्टर उपलब्ध नहीं हैं। कृपया दूसरी विशेषता चुनें।",
+        btn_to_slot: "समय स्लॉट चुनने के लिए आगे बढ़ें →",
+
+        s4_badge: "चरण 4/4",
+        s4_title: "तारीख और पसंदीदा समय स्लॉट चुनें",
+        s4_subtitle: "परामर्श के लिए उपलब्ध तारीख और समय का चयन करें।",
+        btn_back_doc: "← डॉक्टर पर वापस",
+        s4_select_date: "अपॉइंटमेंट की तारीख चुनें",
+        s4_morning_slots: "सुबह के स्लॉट (09:00 AM - 11:30 AM)",
+        s4_afternoon_slots: "दोपहर और शाम के स्लॉट (12:00 PM - 05:00 PM)",
+        btn_confirm_booking: "✅ बुकिंग की पुष्टि करें और टोकन पाएं",
+
+        s5_confirmed_title: "अपॉइंटमेंट कन्फर्म हो गया!",
+        s5_confirmed_sub: "आपका डिजिटल ओपीडी टोकन जारी हो गया है। हमने आपके विवरण पर पुष्टि भेज दी है।",
+        s5_dispenser_badge: "आधिकारिक डिजिटल ओपीडी टोकन",
+        s5_dispenser_title: "रोगी अपॉइंटमेंट टिकट डिस्पेंसर",
+        s5_dispenser_desc: "अपना परामर्श पास प्रिंट करने के लिए डिस्पेंसर बटन 🖨 दबाएं।",
+        btn_print_pdf: "टिकट प्रिंट / पीडीएफ सेव करें",
+        btn_redispense: "टिकट पुनः प्राप्त करें",
+        s5_my_appts_title: "मेरे बुक किए गए अपॉइंटमेंट और कतार",
+        s5_my_appts_sub: "आपके अस्पताल दौरों की रीयल-टाइम स्थिति।",
+        btn_new_appt: "+ नया अपॉइंटमेंट",
+        s5_no_appts: "अभी तक कोई अपॉइंटमेंट बुक नहीं हुआ",
+        s5_no_appts_sub: "डिजिटल टोकन प्राप्त करने के लिए अपना पहला डॉक्टर परामर्श बुक करें।",
+
+        ticket_click_print: "प्रिंट करने के लिए क्लिक करें",
+        ticket_token_desk: "ओपीडी टोकन काउंटर",
+        ticket_token_no: "टोकन संख्या",
+        ticket_consult_pass: "रोगी परामर्श पास",
+        ticket_patient: "रोगी:",
+        ticket_age_gender: "आयु / लिंग:",
+        ticket_contact: "संपर्क:",
+        ticket_blood: "रक्त समूह:",
+        ticket_doctor: "डॉक्टर:",
+        ticket_specialty: "विशेषज्ञता:",
+        ticket_concern: "लक्षण:",
+        ticket_counter: "काउंटर:",
+        ticket_counter_val: "काउंटर #3 (ओपीडी)",
+        ticket_fee: "टोकन शुल्क:",
+        ticket_fee_val: "₹0.00 (निःशुल्क टोकन)",
+        ticket_status: "कतार स्थिति:",
+        ticket_status_val: "पुष्ट और सक्रिय",
+        ticket_notice: "कृपया समय से 10 मिनट पहले ओपीडी काउंटर पर पहुंचें।",
+        ticket_wish: "आपके शीघ्र स्वस्थ होने की कामना करते हैं! · SmartQueue",
+        ticket_view_print: "टिकट देखें और प्रिंट करें",
+        ticket_cancel: "टिकट रद्द करें",
+        confirm_cancel_appt: "क्या आप वाकई इस अपॉइंटमेंट टिकट को रद्द करना चाहते हैं?",
+        ticket_maps: "गूगल मैप्स",
+        ticket_live_active: "लाइव कतार सक्रिय",
+        ticket_expected: "समय पर अपेक्षित",
+        ticket_booked_for: "के लिए बुक किया गया",
+
+        badge_govt: "सरकारी",
+        badge_private: "निजी",
+        badge_multi: "मल्टी-स्पेशियलिटी",
+        badge_clinic: "क्लिनिक",
+        badge_eye: "नेत्र विशेषज्ञ",
+        badge_general: "सामान्य",
+        wait_prefix: "प्रतीक्षा:",
+        avail_now: "अभी उपलब्ध",
+        avail_in: "में उपलब्ध",
+
+        spec_gp: "सामान्य चिकित्सक",
+        spec_cardio: "हृदय रोग विशेषज्ञ",
+        spec_derma: "त्वचा रोग विशेषज्ञ",
+        spec_ortho: "हड्डी रोग विशेषज्ञ",
+        spec_pedia: "बाल रोग विशेषज्ञ",
+        spec_ent: "ईएनटी विशेषज्ञ",
+        spec_neuro: "न्यूरोलॉजिस्ट",
+
+        days_short: ["रवि", "सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि"],
+        months_short: ["जन", "फ़र", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अग", "सित", "अक्तू", "नव", "दिस"],
+
+        chat_header_title: "SmartQueue AI सहायक",
+        chat_247: "24/7",
+        chat_placeholder: "लक्षण, डॉक्टर या अस्पताल के बारे में पूछें...",
+        chat_listening: "🎙️ सुन रहा हूँ... बोलिए",
+        chat_thinking: "SmartQueue AI सोच रहा है...",
+        chat_greeting: "नमस्ते! 👋 मैं आपका SmartQueue AI सहायक हूँ। मैं आपको सही विशेषज्ञ डॉक्टर चुनने, अस्पताल के समय और लाइव कतार टोकन में मदद कर सकता हूँ। मैं आपकी क्या मदद करूँ?",
+        chat_greeting_with_name: "नमस्ते {name}! 👋 मैं आपका SmartQueue AI सहायक हूँ। मैं आपको सही विशेषज्ञ डॉक्टर चुनने, अस्पताल के समय और लाइव कतार टोकन में मदद कर सकता हूँ। मैं आपकी क्या मदद करूँ?",
+        chat_quick_replies: ["मेरा नाम और टोकन देखें", "बुखार के लिए कौन से डॉक्टर?", "देहरादून में अस्पताल", "कतार का प्रतीक्षा समय"],
+        chat_offline_msg: "SmartQueue AI सेवा से संपर्क नहीं हो सका। कृपया जांचें कि सर्वर चल रहा है।",
+        chat_speech_unsupported: "इस ब्राउज़र में वाक् पहचान समर्थित नहीं है। कृपया Chrome आज़माएँ।",
+        btn_back: "← वापस"
+      },
+      ta: {
+        nav_how_it_works: "இது எப்படி இயங்குகிறது",
+        nav_features: "சிறப்பம்சங்கள்",
+        nav_hospitals: "மருத்துவமனைகள்",
+        nav_specialists: "நிபுணர்கள்",
+        nav_faq: "அடிக்கடி கேட்கப்படும் கேள்விகள்",
+        nav_install: "செயலியை நிறுவுக",
+        nav_track: "கண்காணிக்கவும்",
+        nav_tokens: "டோக்கன்கள்",
+        nav_book_appt: "முன்பதிவு செய்க",
+        nav_book_now: "இப்போது முன்பதிவு செய்க",
+        nav_live_queue: "நேரடி வரிசை",
+        nav_patient_prefix: "நோயாளி",
+        nav_guest: "விருந்தினர்",
+        step_home: "முகப்பு",
+        step_intake: "1. விவரம்",
+        step_hospital: "2. மருத்துவமனை",
+        step_doctor: "3. மருத்துவர்",
+        step_slot: "4. நேரம்",
+        step_token: "5. டோக்கன்",
+        mobile_lang_title: "மொழியைத் தேர்ந்தெடுக்கவும் / Select Language",
+
+        hero_status_pill: "15,000+ ஓபிடி வரிசைகள் டிஜிட்டல் மயம் • காத்திருப்பு இல்லை",
+        hero_title_prefix: "நெரிசலான ஓபிடியைத் தவிர்க்கவும்.",
+        hero_title_gradient: "மருத்துவர் வரிசையைத் தொடரவும்",
+        hero_title_suffix: "நிகழ்நேரத்தில்.",
+        hero_sub: "<strong>எய்ம்ஸ் ரிஷிகேஷ்</strong> மற்றும் <strong>இமாலயன் நிறுவனம்</strong> போன்ற முன்னணி மருத்துவமனைகளில் சரிபார்க்கப்பட்ட நிபுணர்களிடம் முன்பதிவு செய்யுங்கள். உங்கள் நேரடி வரிசை நிலையை மொபைலில் கண்காணிக்கவும்.",
+        hero_cta_book: "முன்பதிவு செய்து டோக்கன் பெறுக",
+        chat_title: "SmartQueue AI உதவியாளரிடம் கேளுங்கள்",
+
+        s1_badge: "படி 1/4 · நோயாளி பதிவு",
+        s1_title: "உங்கள் ஆலோசனைக்கு சிறந்த மருத்துவ நிபுணரைத் தேர்ந்தெடுக்கவும்",
+        s1_back_home: "முகப்புக்குத் திரும்பு",
+        form_fname: "முதல் பெயர்",
+        form_lname: "கடைசி பெயர்",
+        form_email: "மின்னஞ்சல்",
+        form_email_placeholder: "உங்கள் மின்னஞ்சல் முகவரி",
+        form_phone: "தொலைபேசி எண்",
+        form_age: "வயது (ஆண்டுகள்)",
+        form_gender: "பாலினம்",
+        gender_select: "பாலினத்தைத் தேர்ந்தெடுக்கவும்",
+        gender_male: "ஆண்",
+        gender_female: "பெண்",
+        gender_other: "பிற",
+        form_blood: "இரத்த வகை",
+        btn_get_matched: "நிபுணரைக் கண்டறிக",
+
+        s2_badge: "படி 2/4",
+        s2_title: "மருத்துவமனை மற்றும் சுகாதார மையத்தைத் தேர்ந்தெடுக்கவும்",
+        s2_subtitle: "சரிபார்க்கப்பட்ட கூட்டாளர் மருத்துவமனைகளில் இருந்து தேர்ந்தெடுக்கவும்.",
+        s2_concern_label: "சுகாதாரப் பிரச்சனை / அறிகுறிகள் *",
+        s2_concern_placeholder: "உங்கள் அறிகுறிகளை விவரிக்கவும் (எ.கா., 2 நாட்களாக காய்ச்சல், முதுகு வலி, தலைவலி...)",
+        s2_spec_needed: "தேவையான மருத்துவ துறை",
+        s2_avail_hosp: "கிடைக்கும் மருத்துவமனைகள் *",
+        s2_avail_hosp_desc: "உங்களுக்கு அருகிலுள்ள அல்லது விருப்பமான மருத்துவமனையைத் தேர்ந்தெடுக்கவும்.",
+        btn_back_intake: "← நோயாளி விவரங்களுக்குத் திரும்பு",
+        btn_to_doctor: "மருத்துவரைத் தேர்ந்தெடுக்க தொடரவும் →",
+
+        s3_badge: "படி 3/4",
+        s3_title: "உங்கள் சிறப்பு மருத்துவரைத் தேர்ந்தெடுக்கவும்",
+        s3_subtitle: "மருத்துவர் இருப்பு மற்றும் ஓபிடி நேரத்தை சரிபார்க்கவும்.",
+        btn_back_hosp: "← மருத்துவமனைக்குத் திரும்பு",
+        s3_problem_label: "உங்கள் பிரச்சனை / அறிகுறிகள்",
+        s3_filter_label: "துறை வாரியாக வடிகட்டவும்",
+        s3_all_spec: "அனைத்து துறைகளும்",
+        s3_no_docs: "இந்த துறைக்கு மருத்துவர்கள் கிடைக்கவில்லை. தயவுசெய்து வேறு துறையைத் தேர்ந்தெடுக்கவும்.",
+        btn_to_slot: "நேரத்தைத் தேர்ந்தெடுக்க தொடரவும் →",
+
+        s4_badge: "படி 4/4",
+        s4_title: "தேதி மற்றும் விருப்ப நேரத்தைத் தேர்ந்தெடுக்கவும்",
+        s4_subtitle: "ஆலோசனைக்கான தேதி மற்றும் நேரத்தைத் தேர்ந்தெடுக்கவும்.",
+        btn_back_doc: "← மருத்துவருக்குத் திரும்பு",
+        s4_select_date: "முன்பதிவு தேதியைத் தேர்ந்தெடுக்கவும்",
+        s4_morning_slots: "காலை நேரங்கள் (09:00 AM - 11:30 AM)",
+        s4_afternoon_slots: "மதியம் & மாலை நேரங்கள் (12:00 PM - 05:00 PM)",
+        btn_confirm_booking: "✅ முன்பதிவை உறுதிசெய்து டோக்கன் பெறுக",
+
+        s5_confirmed_title: "முன்பதிவு உறுதி செய்யப்பட்டது!",
+        s5_confirmed_sub: "உங்கள் டிஜிட்டல் டோக்கன் உருவாக்கப்பட்டது. உங்கள் தொடர்புக்கு உறுதிப்படுத்தல் அனுப்பப்பட்டுள்ளது.",
+        s5_dispenser_badge: "அதிகாரப்பூர்வ டிஜிட்டல் ஓபிடி டோக்கன்",
+        s5_dispenser_title: "நோயாளி டோக்கன் அச்சு இயந்திரம்",
+        s5_dispenser_desc: "உங்கள் டோக்கன் சீட்டை அச்சிட பட்டனை அழுத்தவும்.",
+        btn_print_pdf: "சீட்டை அச்சிடு / PDF சேமி",
+        btn_redispense: "மீண்டும் அச்சிடு",
+        s5_my_appts_title: "எனது முன்பதிவுகள் மற்றும் வரிசை",
+        s5_my_appts_sub: "உங்கள் வருகைக்கான நேரடி நிலை தகவல்.",
+        btn_new_appt: "+ புதிய முன்பதிவு",
+        s5_no_appts: "இதுவரை முன்பதிவுகள் எதுவும் இல்லை",
+        s5_no_appts_sub: "டிஜிட்டல் டோக்கனைப் பெற உங்கள் முதல் மருத்துவ ஆலோசனையை முன்பதிவு செய்யுங்கள்.",
+
+        ticket_click_print: "அச்சிட கிளிக் செய்க",
+        ticket_token_desk: "ஓபிடி டோக்கன் கவுண்டர்",
+        ticket_token_no: "டோக்கன் எண்",
+        ticket_consult_pass: "நோயாளி ஆலோசனை பாஸ்",
+        ticket_patient: "நோயாளி:",
+        ticket_age_gender: "வயது / பாலினம்:",
+        ticket_contact: "தொடர்பு:",
+        ticket_blood: "இரத்த வகை:",
+        ticket_doctor: "மருத்துவர்:",
+        ticket_specialty: "துறை:",
+        ticket_concern: "பிரச்சனை:",
+        ticket_counter: "கவுண்டர்:",
+        ticket_counter_val: "கவுண்டர் #3 (ஓபிடி)",
+        ticket_fee: "டோக்கன் கட்டணம்:",
+        ticket_fee_val: "₹0.00 (இலவச டோக்கன்)",
+        ticket_status: "வரிசை நிலை:",
+        ticket_status_val: "உறுதிசெய்யப்பட்டு செயலில் உள்ளது",
+        ticket_notice: "நேரத்திற்கு 10 நிமிடங்களுக்கு முன் ஓபிடி கவுண்டரில் ஆஜராகவும்.",
+        ticket_wish: "விரைவில் குணமடைய வாழ்த்துகிறோம்! · SmartQueue",
+        ticket_view_print: "சீட்டைப் பார்க்க & அச்சிட",
+        ticket_cancel: "டோக்கனை ரத்துசெய்",
+        confirm_cancel_appt: "இந்த முன்பதிவு டோக்கனை ரத்துசெய்ய விரும்புகிறீர்களா?",
+        ticket_maps: "கூகிள் வரைபடம்",
+        ticket_live_active: "நேரடி வரிசை செயலில் உள்ளது",
+        ticket_expected: "நேரத்திற்கு எதிர்பார்க்கப்படுகிறது",
+        ticket_booked_for: "முன்பதிவு செய்யப்பட்டவர்",
+
+        badge_govt: "அரசு",
+        badge_private: "தனியார்",
+        badge_multi: "மல்டி-ஸ்பெஷாலிட்டி",
+        badge_clinic: "கிளினிக்",
+        badge_eye: "கண் மருத்துவமனை",
+        badge_general: "பொது",
+        wait_prefix: "காத்திருப்பு:",
+        avail_now: "இப்போது கிடைக்கும்",
+        avail_in: "இல் கிடைக்கும்",
+
+        spec_gp: "பொது மருத்துவர்",
+        spec_cardio: "இதய நிபுணர்",
+        spec_derma: "தோல் நோய் நிபுணர்",
+        spec_ortho: "எலும்பு முறிவு நிபுணர்",
+        spec_pedia: "குழந்தை நல மருத்துவர்",
+        spec_ent: "காது மூக்கு தொண்டை நிபுணர்",
+        spec_neuro: "நரம்பியல் நிபுணர்",
+
+        days_short: ["ஞாயிறு", "திங்கள்", "செவ்வாய்", "புதன்", "வியாழன்", "வெள்ளி", "சனி"],
+        months_short: ["ஜன", "பிப்", "மார்", "ஏப்", "மே", "ஜூன்", "ஜூலை", "ஆக", "செப்", "அக்", "நவ", "டிச"],
+
+        chat_header_title: "SmartQueue AI உதவியாளர்",
+        chat_247: "24/7",
+        chat_placeholder: "அறிகுறிகள், மருத்துவர்கள் அல்லது மருத்துவமனை பற்றி கேட்கவும்...",
+        chat_listening: "🎙️ கேட்கிறது... இப்போது பேசுங்கள்",
+        chat_thinking: "SmartQueue AI சிந்திக்கிறது...",
+        chat_greeting: "வணக்கம்! 👋 நான் உங்கள் SmartQueue AI உதவியாளர். சரியான மருத்துவரை தேர்வு செய்யவும், மருத்துவமனை நேரம் மற்றும் வரிசை டோக்கன்களை அறியவும் உதவ முடியும். நான் உங்களுக்கு எவ்வாறு உதவட்டும்?",
+        chat_greeting_with_name: "வணக்கம் {name}! 👋 நான் உங்கள் SmartQueue AI உதவியாளர். சரியான மருத்துவரை தேர்வு செய்யவும், மருத்துவமனை நேரம் மற்றும் வரிசை டோக்கன்களை அறியவும் உதவ முடியும். நான் உங்களுக்கு எவ்வாறு உதவட்டும்?",
+        chat_quick_replies: ["என் பெயர் மற்றும் டோக்கன் பார்க்கவும்", "காய்ச்சலுக்கு எந்த மருத்துவர்?", "டேராடூனில் உள்ள மருத்துவமனை", "வரிசை காத்திருப்பு நேரம்"],
+        chat_offline_msg: "SmartQueue AI சேவையை அணுக முடியவில்லை. சர்வர் இயங்குகிறதா என சரிபார்க்கவும்.",
+        chat_speech_unsupported: "இந்த உலாவியில் குரல் அறிதல் ஆதரிக்கப்படவில்லை. Chrome-ஐப் பயன்படுத்தவும்.",
+        btn_back: "← பின்செல்"
+      },
+      ml: {
+        nav_how_it_works: "ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു",
+        nav_features: "സവിശേഷതകൾ",
+        nav_hospitals: "ആശുപത്രികൾ",
+        nav_specialists: "സ്പെഷ്യലിസ്റ്റുകൾ",
+        nav_faq: "പതിവുചോദ്യങ്ങൾ",
+        nav_install: "ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യുക",
+        nav_track: "ട്രാക്ക് ചെയ്യുക",
+        nav_tokens: "ടോക്കണുകൾ",
+        nav_book_appt: "അപ്പോയിന്റ്മെന്റ് ബുക്ക് ചെയ്യുക",
+        nav_book_now: "ഇപ്പോൾ ബുക്ക് ചെയ്യുക",
+        nav_live_queue: "ലൈവ് ക്യൂ",
+        nav_patient_prefix: "രോഗി",
+        nav_guest: "അതിഥി",
+        step_home: "ഹോം",
+        step_intake: "1. വിവരങ്ങൾ",
+        step_hospital: "2. ആശുപത്രി",
+        step_doctor: "3. ഡോക്ടർ",
+        step_slot: "4. സമയം",
+        step_token: "5. ടോക്കൺ",
+        mobile_lang_title: "ഭാഷ തിരഞ്ഞെടുക്കുക / Select Language",
+
+        hero_status_pill: "15,000+ ഒപിഡി ക്യൂകൾ ഡിജിറ്റലാക്കി • കാത്തിരിപ്പില്ല",
+        hero_title_prefix: "തിരക്കേറിയ ഒപിഡി ഒഴിവാക്കുക.",
+        hero_title_gradient: "ഡോക്ടർ ക്യൂ ട്രാക്ക് ചെയ്യുക",
+        hero_title_suffix: "തത്സമയം.",
+        hero_sub: "<strong>എയിംസ് ഋഷികേശ്</strong>, <strong>ഹിമാലയൻ ഇൻസ്റ്റിറ്റ്യൂട്ട്</strong> തുടങ്ങിയ പ്രമുഖ സ്ഥാപനങ്ങളിലെ പ്രഗത്ഭ ഡോക്ടർമാരുടെ അപ്പോയിന്റ്മെന്റുകൾ ബുക്ക് ചെയ്യുക. ഫോണിലൂടെ ലൈവ് ക്യൂ ട്രാക്ക് ചെയ്യാം.",
+        hero_cta_book: "അപ്പോയിന്റ്മെന്റ് ബുക്ക് ചെയ്ത് ടോക്കൺ നേടുക",
+        chat_title: "SmartQueue AI അസിസ്റ്റന്റിനോട് ചോദിക്കുക",
+
+        s1_badge: "ഘട്ടം 1/4 · രോഗി രജിസ്ട്രേഷൻ",
+        s1_title: "നിങ്ങളുടെ ആരോഗ്യ പ്രശ്നത്തിന് അനുയോജ്യനായ സ്പെഷ്യലിസ്റ്റിനെ കണ്ടെത്തുക",
+        s1_back_home: "ഹോം പേജിലേക്ക് മടങ്ങുക",
+        form_fname: "ആദ്യ നാമം",
+        form_lname: "അവസാന നാമം",
+        form_email: "ഇമെയിൽ",
+        form_email_placeholder: "നിങ്ങളുടെ ഇമെയിൽ വിലാസം",
+        form_phone: "ഫോൺ നമ്പർ",
+        form_age: "പ്രായം (വർഷം)",
+        form_gender: "ലിംഗം",
+        gender_select: "ലിംഗം തിരഞ്ഞെടുക്കുക",
+        gender_male: "പുരുഷൻ",
+        gender_female: "സ്ത്രീ",
+        gender_other: "മറ്റുള്ളവ",
+        form_blood: "രക്തഗ്രൂപ്പ്",
+        btn_get_matched: "ഡോക്ടറെ കണ്ടെത്തുക",
+
+        s2_badge: "ഘട്ടം 2/4",
+        s2_title: "ആശുപത്രിയും ആരോഗ്യ കേന്ദ്രവും തിരഞ്ഞെടുക്കുക",
+        s2_subtitle: "അംഗീകൃത പങ്കാളി ആശുപത്രികളിൽ നിന്നും ക്ലിനിക്കുകളിൽ നിന്നും തിരഞ്ഞെടുക്കുക.",
+        s2_concern_label: "രോഗലക്ഷണങ്ങൾ / ആരോഗ്യ പ്രശ്നം *",
+        s2_concern_placeholder: "ലക്ഷണങ്ങൾ വിശദീകരിക്കുക (ഉദാഹരണത്തിന്: 2 ദിവസമായി കടുത്ത പനി, നെഞ്ചുവേദന, തലവേദന...)",
+        s2_spec_needed: "ആവശ്യമായ സ്പെഷ്യാലിറ്റി",
+        s2_avail_hosp: "ലഭ്യമായ ആശുപത്രികൾ *",
+        s2_avail_hosp_desc: "നിങ്ങൾക്ക് ഏറ്റവും അടുത്തുള്ള ആശുപത്രി തിരഞ്ഞെടുക്കുക.",
+        btn_back_intake: "← രോഗി വിവരങ്ങളിലേക്ക് മടങ്ങുക",
+        btn_to_doctor: "ഡോക്ടറെ തിരഞ്ഞെടുക്കാൻ തുടരുക →",
+
+        s3_badge: "ഘട്ടം 3/4",
+        s3_title: "സ്പെഷ്യലിസ്റ്റ് ഡോക്ടറെ തിരഞ്ഞെടുക്കുക",
+        s3_subtitle: "ഡോക്ടർമാരുടെ ലഭ്യതയും ഒപിഡി സമയവും പരിശോധിക്കുക.",
+        btn_back_hosp: "← ആശുപത്രിയിലേക്ക് മടങ്ങുക",
+        s3_problem_label: "നിങ്ങളുടെ രോഗലക്ഷണം",
+        s3_filter_label: "വിഭാഗം അനുസരിച്ച് ഫിൽട്ടർ ചെയ്യുക",
+        s3_all_spec: "എല്ലാ വിഭാഗങ്ങളും",
+        s3_no_docs: "ഈ വിഭാഗത്തിൽ ഡോക്ടർമാർ ലഭ്യമല്ല. മറ്റൊരു വിഭാഗം തിരഞ്ഞെടുക്കുക.",
+        btn_to_slot: "സമയം തിരഞ്ഞെടുക്കാൻ തുടരുക →",
+
+        s4_badge: "ഘട്ടം 4/4",
+        s4_title: "തീയതിയും സമയവും തിരഞ്ഞെടുക്കുക",
+        s4_subtitle: "നിങ്ങൾക്ക് സൗകര്യപ്രദമായ തീയതിയും സമയവും തിരഞ്ഞെടുക്കുക.",
+        btn_back_doc: "← ഡോക്ടറിലേക്ക് മടങ്ങുക",
+        s4_select_date: "അപ്പോയിന്റ്മെന്റ് തീയതി തിരഞ്ഞെടുക്കുക",
+        s4_morning_slots: "രാവിലത്തെ സമയം (09:00 AM - 11:30 AM)",
+        s4_afternoon_slots: "ഉച്ചയ്ക്കും വൈകുന്നേരവുമുള്ള സമയം (12:00 PM - 05:00 PM)",
+        btn_confirm_booking: "✅ ബുക്കിംഗ് സ്ഥിരീകരിച്ച് ടോക്കൺ നേടുക",
+
+        s5_confirmed_title: "അപ്പോയിന്റ്മെന്റ് സ്ഥിരീകരിച്ചു!",
+        s5_confirmed_sub: "ഡിജിറ്റൽ ഒപിഡി ടോക്കൺ ലഭ്യമായിട്ടുണ്ട്. സ്ഥിരീകരണ സന്ദേശം അയച്ചിട്ടുണ്ട്.",
+        s5_dispenser_badge: "ഔദ്യോഗിക ഡിജിറ്റൽ ഒപിഡി ടോക്കൺ",
+        s5_dispenser_title: "ടോക്കൺ ടിക്കറ്റ് ഡിസ്പെൻസർ",
+        s5_dispenser_desc: "ടിക്കറ്റ് പ്രിന്റ് ചെയ്യാൻ ബട്ടൺ 🖨 അമർത്തുക.",
+        btn_print_pdf: "ടിക്കറ്റ് പ്രിന്റ് / PDF സേവ് ചെയ്യുക",
+        btn_redispense: "വീണ്ടും പ്രിന്റ് ചെയ്യുക",
+        s5_my_appts_title: "എന്റെ അപ്പോയിന്റ്മെന്റുകളും ക്യൂവും",
+        s5_my_appts_sub: "തത്സമയ ഒപിഡി ക്യൂ നിലവിവരം.",
+        btn_new_appt: "+ പുതിയ അപ്പോയിന്റ്മെന്റ്",
+        s5_no_appts: "ഇതുവരെ അപ്പോയിന്റ്മെന്റുകളൊന്നും ബുക്ക് ചെയ്തിട്ടില്ല",
+        s5_no_appts_sub: "ഡിജിറ്റൽ ക്യൂ ടോക്കൺ ലഭിക്കാൻ നിങ്ങളുടെ ആദ്യ ഡോക്ടർ കൺസൾട്ടേഷൻ ബുക്ക് ചെയ്യുക.",
+
+        ticket_click_print: "പ്രിന്റ് ചെയ്യാൻ ക്ലിക്ക് ചെയ്യുക",
+        ticket_token_desk: "ഒപിഡി ടോക്കൺ കൗണ്ടർ",
+        ticket_token_no: "ടോക്കൺ നമ്പർ",
+        ticket_consult_pass: "കൺസൾട്ടേഷൻ പാസ്സ്",
+        ticket_patient: "രോഗി:",
+        ticket_age_gender: "പ്രായം / ലിംഗം:",
+        ticket_contact: "ഫോൺ:",
+        ticket_blood: "രക്തഗ്രൂപ്പ്:",
+        ticket_doctor: "ഡോക്ടർ:",
+        ticket_specialty: "വിഭാഗം:",
+        ticket_concern: "ലക്ഷണം:",
+        ticket_counter: "കൗണ്ടർ:",
+        ticket_counter_val: "കൗണ്ടർ #3 (ഒപിഡി)",
+        ticket_fee: "ഫീസ്:",
+        ticket_fee_val: "₹0.00 (സൗജന്യ ടോക്കൺ)",
+        ticket_status: "ക്യൂ നില:",
+        ticket_status_val: "സ്ഥിരീകരിച്ചതും സജീവവും",
+        ticket_notice: "നിശ്ചയിച്ച സമയത്തിന് 10 മിനിറ്റ് മുമ്പ് കൗണ്ടറിൽ എത്തുക.",
+        ticket_wish: "വേഗത്തിൽ സുഖം പ്രാപിക്കട്ടെ എന്ന് ആശംസിക്കുന്നു! · SmartQueue",
+        ticket_view_print: "ടിക്കറ്റ് കണ്ട് പ്രിന്റ് ചെയ്യുക",
+        ticket_cancel: "ടോക്കൺ റദ്ദാക്കുക",
+        confirm_cancel_appt: "ഈ അപ്പോയിന്റ്മെന്റ് ടോക്കൺ റദ്ദാക്കണമെന്ന് ഉറപ്പാണോ?",
+        ticket_maps: "ഗൂഗിൾ മാപ്പ്",
+        ticket_live_active: "ലൈവ് ക്യൂ സജീവം",
+        ticket_expected: "കൃത്യസമയത്ത് പ്രതീക്ഷിക്കുന്നു",
+        ticket_booked_for: "ബുക്ക് ചെയ്ത വ്യക്തി",
+
+        badge_govt: "ഗവൺമെന്റ്",
+        badge_private: "പ്രൈവറ്റ്",
+        badge_multi: "മൾട്ടി-സ്പെഷ്യാലിറ്റി",
+        badge_clinic: "ക്ലിനിക്ക്",
+        badge_eye: "നേത്രരോഗ വിദഗ്ദ്ധർ",
+        badge_general: "ജനറൽ",
+        wait_prefix: "കാത്തിരിപ്പ്:",
+        avail_now: "ഇപ്പോൾ ലഭ്യമാണ്",
+        avail_in: "ലഭ്യമാകും:",
+
+        spec_gp: "ജനറൽ ഫിസിഷ്യൻ",
+        spec_cardio: "കാർഡിയോളജിസ്റ്റ്",
+        spec_derma: "ഡെർമറ്റോളജിസ്റ്റ്",
+        spec_ortho: "ഓർത്തോപീഡിക്",
+        spec_pedia: "പീഡിയാട്രീഷ്യൻ",
+        spec_ent: "ഇ.എൻ.ടി സ്പെഷ്യലിസ്റ്റ്",
+        spec_neuro: "ന്യൂറോളജിസ്റ്റ്",
+
+        days_short: ["ഞായർ", "തിങ്കൾ", "ചൊവ്വ", "ബുധൻ", "വ്യാഴം", "വെള്ളി", "ശനി"],
+        months_short: ["ജനു", "ഫെബ്രു", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ", "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റം", "ഒക്ടോ", "നവം", "ഡിസം"],
+
+        chat_header_title: "SmartQueue AI അസിസ്റ്റന്റ്",
+        chat_247: "24/7",
+        chat_placeholder: "ലക്ഷണങ്ങൾ, ഡോക്ടർമാർ അല്ലെങ്കിൽ ആശുപത്രികളെക്കുറിച്ച് ചോദിക്കുക...",
+        chat_listening: "🎙️ കേൾക്കുന്നു... സംസാരിക്കൂ",
+        chat_thinking: "SmartQueue AI ചിന്തിക്കുന്നു...",
+        chat_greeting: "നമസ്കാരം! 👋 ഞാൻ നിങ്ങളുടെ SmartQueue AI അസിസ്റ്റന്റാണ്. ശരിയായ സ്പെഷ്യലിസ്റ്റ് ഡോക്ടറെ കണ്ടെത്താനും, ആശുപത്രി സമയങ്ങളും ലൈവ് ക്യൂ ടോക്കണും അറിയാനും ഞാൻ സഹായിക്കാം. ഞാൻ എങ്ങനെ സഹായിക്കണം?",
+        chat_greeting_with_name: "നമസ്കാരം {name}! 👋 ഞാൻ നിങ്ങളുടെ SmartQueue AI അസിസ്റ്റന്റാണ്. ശരിയായ സ്പെഷ്യലിസ്റ്റ് ഡോക്ടറെ കണ്ടെത്താനും, ആശുപത്രി സമയങ്ങളും ലൈവ് ക്യൂ ടോക്കണും അറിയാനും ഞാൻ സഹായിക്കാം. ഞാൻ എങ്ങനെ സഹായിക്കണം?",
+        chat_quick_replies: ["എന്റെ പേരും ടോക്കണും പരിശോധിക്കുക", "പനിക്ക് ഏത് ഡോക്ടറെ കാണണം?", "ഡെറാഡൂണിലെ ആശുപത്രികൾ", "ക്യൂ കാത്തിരിപ്പ് സമയം"],
+        chat_offline_msg: "SmartQueue AI സേവനവുമായി ബന്ധപ്പെടാൻ കഴിഞ്ഞില്ല. സെർവർ പ്രവർത്തിക്കുന്നുണ്ടെന്ന് ഉറപ്പാക്കുക.",
+        chat_speech_unsupported: "ഈ ബ്രൗസറിൽ വോയ്‌സ് റെക്കഗ്നിഷൻ ലഭ്യമല്ല. Chrome ഉപയോഗിക്കുക.",
+        btn_back: "← പിന്നോട്ട്"
+      }
+    };
+
+    let currentLang = localStorage.getItem('smartqueue_lang') || 'en';
+    if (!SUPPORTED_LANGUAGES.some(l => l.code === currentLang)) {
+      currentLang = 'en';
+    }
+
+    function t(key, fallback = '') {
+      if (I18N_DATA[currentLang] && I18N_DATA[currentLang][key] !== undefined) {
+        return I18N_DATA[currentLang][key];
+      }
+      if (I18N_DATA['en'] && I18N_DATA['en'][key] !== undefined) {
+        return I18N_DATA['en'][key];
+      }
+      return fallback || key;
+    }
+
+    function closeAllLangDropdowns() {
+      document.getElementById('langDropdownApp')?.classList.add('hidden');
+      document.getElementById('langDropdownLanding')?.classList.add('hidden');
+      document.getElementById('medi-chat-lang-menu')?.classList.add('hidden');
+      document.getElementById('langChevronApp')?.classList.remove('rotate-180');
+      document.getElementById('langChevronLanding')?.classList.remove('rotate-180');
+    }
+
+    function toggleLangDropdown(type, event) {
+      if (event) event.stopPropagation();
+      const dropdown = type === 'app'
+        ? document.getElementById('langDropdownApp')
+        : document.getElementById('langDropdownLanding');
+      const chevron = type === 'app'
+        ? document.getElementById('langChevronApp')
+        : document.getElementById('langChevronLanding');
+
+      if (!dropdown) return;
+      const isHidden = dropdown.classList.contains('hidden');
+      closeAllLangDropdowns();
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        chevron?.classList.add('rotate-180');
+      }
+    }
+
+    function toggleChatLangMenu(event) {
+      if (event) event.stopPropagation();
+      const menu = document.getElementById('medi-chat-lang-menu');
+      if (!menu) return;
+      const isHidden = menu.classList.contains('hidden');
+      closeAllLangDropdowns();
+      if (isHidden) {
+        menu.classList.remove('hidden');
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#langSelectorAppWrap') &&
+          !e.target.closest('#langSelectorLandingWrap') &&
+          !e.target.closest('#medi-chat-lang-wrap')) {
+        closeAllLangDropdowns();
+      }
+    });
+
+    function renderLangDropdowns() {
+      const currentObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
+
+      const appLabel = document.getElementById('currentLangLabelApp');
+      if (appLabel) appLabel.textContent = currentObj.native;
+      const landingLabel = document.getElementById('currentLangLabelLanding');
+      if (landingLabel) landingLabel.textContent = currentObj.native;
+      const chatLabel = document.getElementById('medi-chat-lang-label');
+      if (chatLabel) chatLabel.textContent = currentObj.code.toUpperCase();
+      const mobileHeader = document.getElementById('mobileLangHeaderLabel');
+      if (mobileHeader) mobileHeader.textContent = t('mobile_lang_title', 'Select Language / भाषा चुनें');
+
+      ['langDropdownApp', 'langDropdownLanding'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = SUPPORTED_LANGUAGES.map(lang => {
+          const isSelected = lang.code === currentLang;
+          return `
+            <button type="button" onclick="setLanguage('${lang.code}')" class="w-full text-left px-3.5 py-2.5 flex items-center justify-between text-xs font-medium transition-colors cursor-pointer ${
+              isSelected ? 'font-bold text-blue-950' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-50'
+            }" style="${isSelected ? 'background-color: #eff6ff !important;' : 'background-color: #ffffff !important;'}">
+              <div class="flex items-center gap-2.5">
+                <span class="text-base shrink-0 leading-none">${lang.flag}</span>
+                <div>
+                  <span class="block ${isSelected ? 'text-blue-950 font-bold' : 'text-slate-900 font-semibold'} leading-tight">${lang.native}</span>
+                  <span class="block text-[10px] ${isSelected ? 'text-blue-600 font-medium' : 'text-slate-400 font-normal'}">${lang.name}</span>
+                </div>
+              </div>
+              ${isSelected ? '<span class="text-blue-600 text-sm font-bold ml-2">✓</span>' : ''}
+            </button>
+          `;
+        }).join('');
+      });
+
+      const mobileGrid = document.getElementById('mobileLangPickerGrid');
+      if (mobileGrid) {
+        mobileGrid.innerHTML = SUPPORTED_LANGUAGES.map(lang => {
+          const isSelected = lang.code === currentLang;
+          return `
+            <button type="button" onclick="setLanguage('${lang.code}')" class="p-2.5 rounded-xl border text-left transition-all flex items-center gap-2 cursor-pointer ${
+              isSelected
+                ? 'border-blue-600 bg-blue-50/70 text-blue-950 ring-1 ring-blue-600'
+                : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-800'
+            }">
+              <span class="text-lg">${lang.flag}</span>
+              <div class="min-w-0">
+                <span class="block text-xs font-bold leading-tight truncate">${lang.native}</span>
+                <span class="block text-[10px] text-slate-500 leading-tight">${lang.name}</span>
+              </div>
+              ${isSelected ? '<span class="ml-auto text-blue-600 text-xs font-bold">✓</span>' : ''}
+            </button>
+          `;
+        }).join('');
+      }
+
+      const chatMenu = document.getElementById('medi-chat-lang-menu');
+      if (chatMenu) {
+        chatMenu.innerHTML = SUPPORTED_LANGUAGES.map(lang => {
+          const isSelected = lang.code === currentLang;
+          return `
+            <button type="button" onclick="setLanguage('${lang.code}')" class="w-full text-left px-3 py-2 flex items-center justify-between hover:bg-slate-800 transition-colors cursor-pointer ${isSelected ? 'bg-slate-800 text-emerald-400 font-bold' : 'text-slate-200'}">
+              <div class="flex items-center gap-2">
+                <span>${lang.flag}</span>
+                <span>${lang.native} (${lang.name})</span>
+              </div>
+              ${isSelected ? '<span>✓</span>' : ''}
+            </button>
+          `;
+        }).join('');
+      }
+    }
+
+    function setLanguage(lang) {
+      if (!SUPPORTED_LANGUAGES.some(l => l.code === lang)) return;
+      currentLang = lang;
+      localStorage.setItem('smartqueue_lang', lang);
+      document.documentElement.lang = lang;
+      closeAllLangDropdowns();
+
+      renderLangDropdowns();
+      applyTranslations();
+
+      if (window._smartQueueRecognition) {
+        const langObj = SUPPORTED_LANGUAGES.find(l => l.code === lang);
+        if (langObj) {
+          window._smartQueueRecognition.lang = langObj.speechLang;
+        }
+      }
+
+      const activeScreen = document.querySelector('.screen.visible');
+      if (activeScreen) {
+        const screenId = activeScreen.id;
+        if (screenId === 'screen2') {
+          renderHospitals();
+        } else if (screenId === 'screen3') {
+          renderDoctors(state.specialty);
+        } else if (screenId === 'screen4') {
+          renderSlotScreen();
+        } else if (screenId === 'screen5') {
+          renderAppointments(false);
+        }
+      }
+
+      if (window._updateChatLanguage) {
+        window._updateChatLanguage(lang);
+      }
+    }
+
+    function applyTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (key) el.textContent = t(key, el.textContent);
+      });
+
+      document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const key = el.getAttribute('data-i18n-html');
+        if (key) el.innerHTML = t(key, el.innerHTML);
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (key) el.placeholder = t(key, el.placeholder);
+      });
+
+      const nsMap = ['step_home', 'step_intake', 'step_hospital', 'step_doctor', 'step_slot', 'step_token'];
+      for (let i = 0; i <= 5; i++) {
+        const btn = document.getElementById('ns' + i);
+        if (btn) {
+          if (i === 0) btn.textContent = '🏠 ' + t('step_home', 'Home');
+          else if (i === 5) btn.textContent = '📋 ' + t('step_token', 'Tokens');
+          else btn.textContent = t(nsMap[i]);
+        }
+      }
+
+      const genderEl = document.getElementById('gender');
+      if (genderEl && genderEl.options && genderEl.options.length >= 4) {
+        const currVal = genderEl.value;
+        genderEl.options[0].textContent = t('gender_select', 'Gender');
+        genderEl.options[1].textContent = t('gender_male', 'Male');
+        genderEl.options[2].textContent = t('gender_female', 'Female');
+        genderEl.options[3].textContent = t('gender_other', 'Other');
+        genderEl.value = currVal;
+      }
+
+      const specRadioLabels = {
+        'General Physician': t('spec_gp', 'General Physician'),
+        'Cardiologist': t('spec_cardio', 'Cardiologist'),
+        'Dermatologist': t('spec_derma', 'Dermatologist'),
+        'Orthopedic': t('spec_ortho', 'Orthopedic'),
+        'Pediatrician': t('spec_pedia', 'Pediatrician'),
+        'Neurologist': t('spec_neuro', 'Neurologist')
+      };
+      document.querySelectorAll('.spec-radio').forEach(radio => {
+        const span = radio.parentElement?.querySelector('span');
+        if (span && specRadioLabels[radio.value]) {
+          span.textContent = specRadioLabels[radio.value];
+        }
+      });
+
+      const specFilterEl = document.getElementById('specFilter');
+      if (specFilterEl && specFilterEl.options && specFilterEl.options.length >= 8) {
+        const currFilter = specFilterEl.value;
+        specFilterEl.options[0].textContent = t('s3_all_spec', 'All Specializations');
+        specFilterEl.options[1].textContent = t('spec_gp', 'General Physician');
+        specFilterEl.options[2].textContent = t('spec_cardio', 'Cardiologist');
+        specFilterEl.options[3].textContent = t('spec_derma', 'Dermatologist');
+        specFilterEl.options[4].textContent = t('spec_ortho', 'Orthopedic');
+        specFilterEl.options[5].textContent = t('spec_pedia', 'Pediatrician');
+        specFilterEl.options[6].textContent = t('spec_ent', 'ENT Specialist');
+        specFilterEl.options[7].textContent = t('spec_neuro', 'Neurologist');
+        specFilterEl.value = currFilter;
+      }
+
+      const chatInput = document.getElementById('medi-chat-input');
+      if (chatInput) {
+        chatInput.placeholder = t('chat_placeholder', 'Ask about symptoms, doctors, hospitals...');
+      }
+
+      syncPatientUI();
+    }
+
     // ── DATA ──────────────────────────────────────────────────────
     const HOSPITALS = [
       { id: 1, name: "AIIMS Rishikesh", loc: "Rishikesh, Uttarakhand", badge: "Government", waitTime: "15 mins", rating: "4.8" },
@@ -2458,14 +3346,14 @@
     ];
 
     const DOCTORS = [
-      { id: 1, name: "Dr. Priya Sharma", spec: "General Physician", avail: "Available Now", status: "green", emoji: "👩‍⚕️", exp: "12 yrs", email: "dr.priya.sharma@smartqueue.in" },
-      { id: 2, name: "Dr. Rohan Mehta", spec: "Cardiologist", avail: "Available in 20m", status: "yellow", emoji: "👨‍⚕️", exp: "15 yrs", email: "dr.rohan.mehta@smartqueue.in" },
-      { id: 3, name: "Dr. Anita Gupta", spec: "Dermatologist", avail: "Available Now", status: "green", emoji: "👩‍⚕️", exp: "9 yrs", email: "dr.anita.gupta@smartqueue.in" },
-      { id: 4, name: "Dr. Suresh Verma", spec: "Orthopedic", avail: "Available Now", status: "green", emoji: "👨‍⚕️", exp: "18 yrs", email: "dr.suresh.verma@smartqueue.in" },
-      { id: 5, name: "Dr. Kavita Nair", spec: "Pediatrician", avail: "Available in 30m", status: "yellow", emoji: "👩‍⚕️", exp: "11 yrs", email: "dr.kavita.nair@smartqueue.in" },
-      { id: 6, name: "Dr. Arun Tiwari", spec: "ENT Specialist", avail: "Available Now", status: "green", emoji: "👨‍⚕️", exp: "14 yrs", email: "dr.arun.tiwari@smartqueue.in" },
-      { id: 7, name: "Dr. Neha Singh", spec: "Neurologist", avail: "Available in 40m", status: "yellow", emoji: "👩‍⚕️", exp: "16 yrs", email: "dr.neha.singh@smartqueue.in" },
-      { id: 8, name: "Dr. Vikram Das", spec: "General Physician", avail: "Available Now", status: "green", emoji: "👨‍⚕️", exp: "8 yrs", email: "dr.vikram.das@smartqueue.in" },
+      { id: 1, name: "Dr. Priya Sharma", spec: "General Physician", avail: "Available Now", status: "green", emoji: "👩‍⚕️", exp: "12 yrs", email: "dr.priya.sharma@smartqueue.in", photo: "images/doctors/dr-priya-sharma.jpg" },
+      { id: 2, name: "Dr. Rohan Mehta", spec: "Cardiologist", avail: "Available in 20m", status: "yellow", emoji: "👨‍⚕️", exp: "15 yrs", email: "dr.rohan.mehta@smartqueue.in", photo: "images/doctors/dr-rohan-mehta.jpg" },
+      { id: 3, name: "Dr. Anita Gupta", spec: "Dermatologist", avail: "Available Now", status: "green", emoji: "👩‍⚕️", exp: "9 yrs", email: "dr.anita.gupta@smartqueue.in", photo: "images/doctors/dr-anita-gupta.jpg" },
+      { id: 4, name: "Dr. Suresh Verma", spec: "Orthopedic", avail: "Available Now", status: "green", emoji: "👨‍⚕️", exp: "18 yrs", email: "dr.suresh.verma@smartqueue.in", photo: "images/doctors/dr-suresh-verma.jpg" },
+      { id: 5, name: "Dr. Kavita Nair", spec: "Pediatrician", avail: "Available in 30m", status: "yellow", emoji: "👩‍⚕️", exp: "11 yrs", email: "dr.kavita.nair@smartqueue.in", photo: "images/doctors/dr-kavita-nair.jpg" },
+      { id: 6, name: "Dr. Arun Tiwari", spec: "ENT Specialist", avail: "Available Now", status: "green", emoji: "👨‍⚕️", exp: "14 yrs", email: "dr.arun.tiwari@smartqueue.in", photo: "images/doctors/dr-arun-tiwari.jpg" },
+      { id: 7, name: "Dr. Neha Singh", spec: "Neurologist", avail: "Available in 40m", status: "yellow", emoji: "👩‍⚕️", exp: "16 yrs", email: "dr.neha.singh@smartqueue.in", photo: "images/doctors/dr-neha-singh.jpg" },
+      { id: 8, name: "Dr. Vikram Das", spec: "General Physician", avail: "Available Now", status: "green", emoji: "👨‍⚕️", exp: "8 yrs", email: "dr.vikram.das@smartqueue.in", photo: "images/doctors/dr-vikram-das.jpg" },
     ];
 
     const AM_SLOTS = ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM"];
@@ -2480,9 +3368,25 @@
       specialty: "General Physician",
       date: null,
       slot: null,
-      appointments: [
-
-      ]
+      appointments: (function () {
+        try {
+          const saved = localStorage.getItem('smartqueue_appointments');
+          if (saved) {
+            const p = JSON.parse(saved);
+            if (Array.isArray(p) && p.length > 0) {
+              const valid = p.filter(a => a && a.bookingId && a.doctor && a.doctor.name && a.hospital && a.hospital.name && a.hospital.name !== 'undefined' && a.hospital.loc && a.hospital.loc !== 'undefined');
+              if (valid.length > 0) {
+                const latest = [valid[0]];
+                localStorage.setItem('smartqueue_appointments', JSON.stringify(latest));
+                return latest;
+              } else {
+                localStorage.removeItem('smartqueue_appointments');
+              }
+            }
+          }
+        } catch (e) {}
+        return [];
+      })()
     };
 
     // ── PATIENT PROFILE & UI SYNCHRONIZATION ─────────────────────
@@ -2526,11 +3430,53 @@
       });
     }
 
+    function autofillPatientFromGoogle() {
+      try {
+        const cached = localStorage.getItem('smartqueue_user');
+        if (cached) {
+          const user = JSON.parse(cached);
+          if (user && user.email) {
+            const emailInput = document.getElementById('email');
+            if (emailInput && !emailInput.value) {
+              emailInput.value = user.email;
+            }
+            const fnameInput = document.getElementById('fname');
+            const lnameInput = document.getElementById('lname');
+            if (user.name) {
+              const parts = user.name.trim().split(' ');
+              if (fnameInput && !fnameInput.value) fnameInput.value = parts[0] || '';
+              if (lnameInput && !lnameInput.value && parts.length > 1) {
+                lnameInput.value = parts.slice(1).join(' ');
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Initialize translations and language dropdowns on startup
+    renderLangDropdowns();
+    applyTranslations();
+
+    // ── GLOBAL AI CHAT TRIGGER (Callable from hero buttons, CTAs, links) ──
+    window.toggleMediChat = function(forceOpen) {
+      if (typeof window.toggleChat === 'function') {
+        window.toggleChat(forceOpen);
+      } else {
+        const btn = document.getElementById('medi-chat-btn');
+        btn?.click();
+      }
+    };
+
     // ── NAVIGATION ────────────────────────────────────────────────
     function goToScreen(n, fromBooking = false) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('visible'));
       const target = document.getElementById('screen' + n);
       if (target) target.classList.add('visible');
+
+      if (n === 1) {
+        autofillPatientFromGoogle();
+      }
 
       syncPatientUI();
 
@@ -2646,8 +3592,18 @@
     // ── SCREEN 2: HOSPITALS ───────────────────────────────────────
     function renderHospitals() {
       const grid = document.getElementById('hospitalGrid');
+      const badgeMap = {
+        'Government': t('badge_govt', 'Government'),
+        'Private': t('badge_private', 'Private'),
+        'Multi-Specialty': t('badge_multi', 'Multi-Specialty'),
+        'Clinic': t('badge_clinic', 'Clinic'),
+        'Eye Hospital': t('badge_eye', 'Eye Hospital'),
+        'General': t('badge_general', 'General')
+      };
+
       grid.innerHTML = HOSPITALS.map(h => {
         const isSelected = state.hospital?.id === h.id;
+        const localizedBadge = badgeMap[h.badge] || h.badge;
         return `
           <div onclick="pickHospital(${h.id})" class="cursor-pointer rounded-2xl p-5 border transition-all duration-200 bg-white ${
             isSelected ? 'border-[#101828] ring-2 ring-[#101828]/10 shadow-md bg-slate-50/50' : 'border-[#E4E7EC] hover:border-slate-400 hover:shadow-xs'
@@ -2656,14 +3612,14 @@
               <div>
                 <span class="text-[11px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-md ${
                   h.badge === 'Government' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-blue-50 text-blue-800 border border-blue-200'
-                }">${h.badge}</span>
+                }">${localizedBadge}</span>
                 <h3 class="font-bold text-base text-[#101828] mt-2">🏥 ${h.name}</h3>
                 <p class="text-xs text-[#475467] mt-1 flex items-center gap-1">
                   <span>📍</span> ${h.loc}
                 </p>
               </div>
               <div class="text-right">
-                <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">Wait: ${h.waitTime}</span>
+                <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">${t('wait_prefix', 'Wait:')} ${h.waitTime}</span>
               </div>
             </div>
           </div>
@@ -2703,28 +3659,46 @@
       const grid = document.getElementById('doctorGrid');
 
       if (docs.length === 0) {
-        grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-500 text-sm">No doctors found for this filter. Please choose another specialization.</div>`;
+        grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-500 text-sm">${t('s3_no_docs', 'No doctors found for this filter. Please choose another specialization.')}</div>`;
         return;
       }
 
+      const specMap = {
+        'General Physician': t('spec_gp', 'General Physician'),
+        'Cardiologist': t('spec_cardio', 'Cardiologist'),
+        'Dermatologist': t('spec_derma', 'Dermatologist'),
+        'Orthopedic': t('spec_ortho', 'Orthopedic'),
+        'Pediatrician': t('spec_pedia', 'Pediatrician'),
+        'ENT Specialist': t('spec_ent', 'ENT Specialist'),
+        'Neurologist': t('spec_neuro', 'Neurologist')
+      };
+
       grid.innerHTML = docs.map(d => {
         const isSelected = state.doctor?.id === d.id;
+        const localizedSpec = specMap[d.spec] || d.spec;
+        let localizedAvail = d.avail;
+        if (d.avail.toLowerCase().includes('available now')) {
+          localizedAvail = t('avail_now', 'Available now');
+        } else if (d.avail.toLowerCase().startsWith('in ')) {
+          localizedAvail = t('avail_in', 'In') + ' ' + d.avail.substring(3);
+        }
+
         return `
           <div onclick="pickDoctor(${d.id})" class="cursor-pointer rounded-2xl p-5 border transition-all duration-200 bg-white flex items-start gap-4 ${
             isSelected ? 'border-[#101828] ring-2 ring-[#101828]/10 shadow-md bg-slate-50/50' : 'border-[#E4E7EC] hover:border-slate-400 hover:shadow-xs'
           }">
-            <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-2xl shrink-0">
-              ${d.emoji}
+            <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-2xl shrink-0 overflow-hidden shadow-xs border border-slate-200">
+              ${d.photo ? `<img src="${d.photo}" alt="${d.name}" class="w-full h-full object-cover"/>` : d.emoji}
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-1">
                 <h4 class="font-bold text-sm text-[#101828] truncate">${d.name}</h4>
                 <span class="text-[11px] text-slate-500 font-medium">${d.exp}</span>
               </div>
-              <p class="text-xs text-[#475467] mt-0.5">${d.spec}</p>
+              <p class="text-xs text-[#475467] mt-0.5">${localizedSpec}</p>
               <div class="mt-2 flex items-center gap-1.5 text-xs">
                 <span class="w-2 h-2 rounded-full ${d.status === 'green' ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-                <span class="${d.status === 'green' ? 'text-emerald-700' : 'text-amber-700'} font-medium text-[11px]">${d.avail}</span>
+                <span class="${d.status === 'green' ? 'text-emerald-700' : 'text-amber-700'} font-medium text-[11px]">${localizedAvail}</span>
               </div>
             </div>
           </div>
@@ -2758,26 +3732,38 @@
       const hosp = state.hospital || HOSPITALS[0];
       const doc = state.doctor || DOCTORS[0];
 
+      const specMap = {
+        'General Physician': t('spec_gp', 'General Physician'),
+        'Cardiologist': t('spec_cardio', 'Cardiologist'),
+        'Dermatologist': t('spec_derma', 'Dermatologist'),
+        'Orthopedic': t('spec_ortho', 'Orthopedic'),
+        'Pediatrician': t('spec_pedia', 'Pediatrician'),
+        'ENT Specialist': t('spec_ent', 'ENT Specialist'),
+        'Neurologist': t('spec_neuro', 'Neurologist')
+      };
+      const docSpec = specMap[doc.spec] || doc.spec;
+      const pGender = p.gender === 'Female' ? t('gender_female', 'Female') : (p.gender === 'Male' ? t('gender_male', 'Male') : (p.gender || '—'));
+
       document.getElementById('apptSummary').innerHTML = `
         <div class="flex flex-wrap items-center justify-between gap-4 text-xs">
           <div>
-            <span class="text-slate-500 uppercase tracking-wide block text-[10px]">Patient</span>
-            <span class="font-bold text-slate-900">${p.fname} ${p.lname} (${p.age || '28'}y, ${p.gender || 'Male'})</span>
+            <span class="text-slate-500 uppercase tracking-wide block text-[10px]">${t('ticket_patient', 'Patient')}</span>
+            <span class="font-bold text-slate-900">${p.fname} ${p.lname} (${p.age || '28'}y, ${pGender})</span>
           </div>
           <div>
-            <span class="text-slate-500 uppercase tracking-wide block text-[10px]">Hospital</span>
+            <span class="text-slate-500 uppercase tracking-wide block text-[10px]">${t('nav_hospitals', 'Hospital')}</span>
             <span class="font-bold text-slate-900">${hosp.name}</span>
           </div>
           <div>
-            <span class="text-slate-500 uppercase tracking-wide block text-[10px]">Specialist</span>
-            <span class="font-bold text-slate-900">${doc.name} (${doc.spec})</span>
+            <span class="text-slate-500 uppercase tracking-wide block text-[10px]">${t('ticket_doctor', 'Doctor')}</span>
+            <span class="font-bold text-slate-900">${doc.name} (${docSpec})</span>
           </div>
         </div>
       `;
 
       const dateRow = document.getElementById('dateRow');
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const days = t('days_short') || ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = t('months_short') || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       dateRow.innerHTML = '';
 
       for (let i = 0; i < 7; i++) {
@@ -2849,7 +3835,11 @@
         booked: new Date().toLocaleDateString('en-IN')
       };
 
-      state.appointments.unshift(appt);
+      // Keep strictly ONLY the current newly booked appointment ticket
+      state.appointments = [appt];
+      try {
+        localStorage.setItem('smartqueue_appointments', JSON.stringify([appt]));
+      } catch (e) {}
 
       // Send to Google Apps Script backend (original)
       fetch(BACKEND_URL, {
@@ -2918,12 +3908,24 @@
       const mount = document.getElementById('printerMount');
       if (!mount || !appt) return;
 
+      const specMap = {
+        'General Physician': t('spec_gp', 'General Physician'),
+        'Cardiologist': t('spec_cardio', 'Cardiologist'),
+        'Dermatologist': t('spec_derma', 'Dermatologist'),
+        'Orthopedic': t('spec_ortho', 'Orthopedic'),
+        'Pediatrician': t('spec_pedia', 'Pediatrician'),
+        'ENT Specialist': t('spec_ent', 'ENT Specialist'),
+        'Neurologist': t('spec_neuro', 'Neurologist')
+      };
+      const localizedSpec = specMap[appt.doctor.spec] || appt.doctor.spec;
+      const localizedGender = appt.patient.gender === 'Female' ? t('gender_female', 'Female') : (appt.patient.gender === 'Male' ? t('gender_male', 'Male') : (appt.patient.gender || '—'));
+
       mount.innerHTML = `
         <div class="wrapper" id="ticketWrapper">
           <div class="printer"></div>
 
           <div class="printer-display">
-            <span class="printer-message"> Click to print</span>
+            <span class="printer-message"> ${t('ticket_click_print', 'Click to print')}</span>
             <div class="letter-wrapper">
               <span class="letter">P</span>
               <span class="letter">r</span>
@@ -2939,7 +3941,7 @@
             </div>
           </div>
 
-          <button class="print-button" id="dispenserPrintBtn" type="button" title="Click to dispense ticket" onclick="replayPrinterAnimation()">🖨</button>
+          <button class="print-button" id="dispenserPrintBtn" type="button" title="${t('ticket_click_print', 'Click to dispense ticket')}" onclick="replayPrinterAnimation()">🖨</button>
 
           <div class="receipt-wrapper">
             <div class="receipt" id="printableReceipt">
@@ -2947,65 +3949,65 @@
                 <div>
                   <div style="font-weight:700;font-size:1.1em;color:#101828;">${appt.hospital.name}</div>
                   <div style="font-size:0.9em;color:#475467;">${appt.hospital.loc}</div>
-                  <div style="font-size:0.8em;color:#667085;text-transform:uppercase;letter-spacing:0.5px;">OPD Token Desk</div>
+                  <div style="font-size:0.8em;color:#667085;text-transform:uppercase;letter-spacing:0.5px;">${t('ticket_token_desk', 'OPD Token Desk')}</div>
                 </div>
                 <div class="logo">🏥</div>
               </div>
 
               <div class="receipt-subheader">
-                <div style="font-weight:700;letter-spacing:0.5px;color:#101828;">TOKEN NO. #${appt.bookingId}</div>
+                <div style="font-weight:700;letter-spacing:0.5px;color:#101828;">${t('ticket_token_no', 'TOKEN NO.')} #${appt.bookingId}</div>
                 <div style="font-size:0.9em;color:#475467;">${appt.date} · ${appt.slot}</div>
               </div>
 
               <table class="receipt-table">
                 <tbody>
                   <tr>
-                    <th colspan="2" style="font-size:1em;padding-bottom:5px;">PATIENT CONSULTATION PASS</th>
+                    <th colspan="2" style="font-size:1em;padding-bottom:5px;">${t('ticket_consult_pass', 'PATIENT CONSULTATION PASS')}</th>
                   </tr>
                   <tr>
-                    <td style="color:#667085;">Patient:</td>
+                    <td style="color:#667085;">${t('ticket_patient', 'Patient:')}</td>
                     <td style="font-weight:700;color:#101828;">${appt.patient.fname} ${appt.patient.lname}</td>
                   </tr>
                   <tr>
-                    <td style="color:#667085;">Age / Gender:</td>
-                    <td>${appt.patient.age || '—'} yrs · ${appt.patient.gender || '—'}</td>
+                    <td style="color:#667085;">${t('ticket_age_gender', 'Age / Gender:')}</td>
+                    <td>${appt.patient.age || '—'} yrs · ${localizedGender}</td>
                   </tr>
                   <tr>
-                    <td style="color:#667085;">Contact:</td>
+                    <td style="color:#667085;">${t('ticket_contact', 'Contact:')}</td>
                     <td>${appt.patient.phone}</td>
                   </tr>
-                  ${appt.patient.blood ? `<tr><td style="color:#667085;">Blood Group:</td><td>${appt.patient.blood}</td></tr>` : ''}
+                  ${appt.patient.blood ? `<tr><td style="color:#667085;">${t('ticket_blood', 'Blood Group:')}</td><td>${appt.patient.blood}</td></tr>` : ''}
                   <tr>
-                    <td style="color:#667085;">Doctor:</td>
+                    <td style="color:#667085;">${t('ticket_doctor', 'Doctor:')}</td>
                     <td style="font-weight:700;color:#101828;">${appt.doctor.name}</td>
                   </tr>
                   <tr>
-                    <td style="color:#667085;">Specialty:</td>
-                    <td>${appt.doctor.spec}</td>
+                    <td style="color:#667085;">${t('ticket_specialty', 'Specialty:')}</td>
+                    <td>${localizedSpec}</td>
                   </tr>
                   <tr>
-                    <td style="color:#667085;">Concern:</td>
+                    <td style="color:#667085;">${t('ticket_concern', 'Concern:')}</td>
                     <td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${appt.problem || 'General Consultation'}</td>
                   </tr>
                   <tr class="receipt-subtotal">
-                    <td style="color:#667085;">Desk Counter:</td>
-                    <td style="font-weight:600;">Counter #3 (OPD)</td>
+                    <td style="color:#667085;">${t('ticket_counter', 'Desk Counter:')}</td>
+                    <td style="font-weight:600;">${t('ticket_counter_val', 'Counter #3 (OPD)')}</td>
                   </tr>
                   <tr class="receipt-tax">
-                    <td style="color:#667085;">Token Fee:</td>
-                    <td style="font-weight:600;">₹0.00 (Free Token)</td>
+                    <td style="color:#667085;">${t('ticket_fee', 'Token Fee:')}</td>
+                    <td style="font-weight:600;">${t('ticket_fee_val', '₹0.00 (Free Token)')}</td>
                   </tr>
                   <tr class="receipt-total">
-                    <td style="color:#667085;">Queue Status:</td>
-                    <td style="color:#047857;font-weight:700;">CONFIRMED &amp; ACTIVE</td>
+                    <td style="color:#667085;">${t('ticket_status', 'Queue Status:')}</td>
+                    <td style="color:#047857;font-weight:700;">${t('ticket_status_val', 'CONFIRMED &amp; ACTIVE')}</td>
                   </tr>
                 </tbody>
               </table>
 
               <div class="receipt-message">
                 <div>
-                  <strong>Please report to OPD Counter 10 mins before slot.</strong><br />
-                  Wishing you a speedy recovery! · SmartQueue
+                  <strong>${t('ticket_notice', 'Please report to OPD Counter 10 mins before slot.')}</strong><br />
+                  ${t('ticket_wish', 'Wishing you a speedy recovery! · SmartQueue')}
                 </div>
               </div>
             </div>
@@ -3042,20 +4044,42 @@
       }, 350);
     }
 
+    function cancelCurrentAppointment(bookingId) {
+      if (confirm(t('confirm_cancel_appt', 'Are you sure you want to cancel this appointment ticket?'))) {
+        state.appointments = [];
+        try {
+          localStorage.removeItem('smartqueue_appointments');
+        } catch (e) {}
+        renderAppointments(false);
+      }
+    }
+
     // ── SCREEN 5: APPOINTMENTS ────────────────────────────────────
     function renderAppointments(justBooked = false) {
-      document.getElementById('successBanner').style.display = justBooked ? 'block' : 'none';
       const printerSection = document.getElementById('ticketPrinterContainer');
       const list = document.getElementById('apptList');
+
+      // Sanitize: filter out any corrupted or dummy items with undefined fields
+      state.appointments = (state.appointments || []).filter(a => 
+        a && a.bookingId && a.doctor && a.doctor.name && a.hospital && a.hospital.name && a.hospital.name !== 'undefined' && a.hospital.loc && a.hospital.loc !== 'undefined'
+      );
+
+      // Strictly retain ONLY the current newly booked appointment ticket
+      if (state.appointments.length > 1) {
+        state.appointments = [state.appointments[0]];
+        try {
+          localStorage.setItem('smartqueue_appointments', JSON.stringify(state.appointments));
+        } catch (e) {}
+      }
 
       if (!state.appointments.length) {
         if (printerSection) printerSection.classList.add('hidden');
         list.innerHTML = `
           <div class="bg-white rounded-2xl p-12 text-center border border-[#E4E7EC]">
             <div class="text-4xl mb-2">📅</div>
-            <h3 class="font-bold text-slate-800 text-base">No appointments booked yet</h3>
-            <p class="text-xs text-slate-500 mt-1">Book your first doctor consultation to generate a digital queue token.</p>
-            <button onclick="goToScreen(1)" class="mt-4 px-4 py-2 bg-[#101828] text-white text-xs rounded-xl">Book Appointment</button>
+            <h3 class="font-bold text-slate-800 text-base">${t('s5_no_appts', 'No appointments booked yet')}</h3>
+            <p class="text-xs text-slate-500 mt-1">${t('s5_no_appts_sub', 'Book your first doctor consultation to generate a digital queue token.')}</p>
+            <button onclick="goToScreen(1)" class="mt-4 px-4 py-2 bg-[#101828] text-white text-xs rounded-xl cursor-pointer hover:bg-black transition-colors">${t('nav_book_appt', 'Book Appointment')}</button>
           </div>
         `;
         return;
@@ -3072,33 +4096,50 @@
         }
       }
 
+      const specMap = {
+        'General Physician': t('spec_gp', 'General Physician'),
+        'Cardiologist': t('spec_cardio', 'Cardiologist'),
+        'Dermatologist': t('spec_derma', 'Dermatologist'),
+        'Orthopedic': t('spec_ortho', 'Orthopedic'),
+        'Pediatrician': t('spec_pedia', 'Pediatrician'),
+        'ENT Specialist': t('spec_ent', 'ENT Specialist'),
+        'Neurologist': t('spec_neuro', 'Neurologist')
+      };
+
       list.innerHTML = state.appointments.map(a => {
         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.hospital.name + ', ' + a.hospital.loc)}`;
+        const localizedSpec = specMap[a.doctor.spec] || a.doctor.spec;
         return `
           <div class="bg-white rounded-2xl p-5 sm:p-6 border border-[#E4E7EC] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">Token: ${a.bookingId}</span>
+                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">${t('ticket_token_no', 'Token')}: ${a.bookingId}</span>
                 <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span> Live Queue Active
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span> ${t('ticket_live_active', 'Live Queue Active')}
                 </span>
               </div>
-              <h3 class="text-base font-bold text-[#101828]">${a.doctor.emoji} ${a.doctor.name} · <span class="font-normal text-xs text-slate-600">${a.doctor.spec}</span></h3>
+              <h3 class="text-base font-bold text-[#101828] flex items-center gap-2">
+                ${a.doctor.photo ? `<img src="${a.doctor.photo}" alt="${a.doctor.name}" class="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0"/>` : `<span>${a.doctor.emoji}</span>`}
+                <span>${a.doctor.name} · <span class="font-normal text-xs text-slate-600">${localizedSpec}</span></span>
+              </h3>
               <p class="text-xs text-slate-600 mt-1">🏥 ${a.hospital.name} · 📍 ${a.hospital.loc}</p>
               <p class="text-xs font-medium text-slate-900 mt-1">📅 ${a.date} · ⏰ ${a.slot}</p>
               <div class="mt-3 flex flex-wrap items-center gap-3">
                 <a href="${mapUrl}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 underline">
-                  <span>🗺️ Google Maps</span>
+                  <span>🗺️ ${t('ticket_maps', 'Google Maps')}</span>
                 </a>
                 <button onclick="loadAndPrintAppt('${a.bookingId}')" class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors border border-slate-200 cursor-pointer">
-                  <span>🖨️ View &amp; Print Ticket</span>
+                  <span>🖨️ ${t('ticket_view_print', 'View & Print Ticket')}</span>
+                </button>
+                <button onclick="cancelCurrentAppointment('${a.bookingId}')" class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors border border-rose-200 cursor-pointer">
+                  <span>🗑️ ${t('ticket_cancel', 'Cancel Ticket')}</span>
                 </button>
               </div>
             </div>
             <div class="sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
-              <span class="text-[11px] text-slate-400 block">Queue Status</span>
-              <span class="text-xs font-bold text-emerald-600">Expected on-time</span>
-              <span class="text-[11px] text-slate-400 block mt-2">Booked for</span>
+              <span class="text-[11px] text-slate-400 block">${t('ticket_status', 'Queue Status')}</span>
+              <span class="text-xs font-bold text-emerald-600">${t('ticket_expected', 'Expected on-time')}</span>
+              <span class="text-[11px] text-slate-400 block mt-2">${t('ticket_booked_for', 'Booked for')}</span>
               <span class="text-xs font-semibold text-slate-700">${a.patient.fname} ${a.patient.lname}</span>
             </div>
           </div>
@@ -3150,6 +4191,9 @@ Be concise, warm and helpful. Support Hindi or English.`;
         }
       }
 
+      window.toggleChat = toggleChat;
+      window.toggleMediChat = toggleChat;
+
       btn.addEventListener('click', () => toggleChat());
       closeBtn.addEventListener('click', () => toggleChat(false));
       const backdropEl = document.getElementById('medi-chat-backdrop');
@@ -3162,10 +4206,11 @@ Be concise, warm and helpful. Support Hindi or English.`;
         const p = getActivePatient();
         const pName = [p.fname, p.lname].filter(Boolean).join(' ');
         const greeting = pName
-          ? `Hello ${p.fname || pName}! 👋 I'm your SmartQueue Assistant. I can help you pick the right specialist, check hospital timings, or navigate queue tokens. How can I help you today?`
-          : `Hello! 👋 I'm your SmartQueue Assistant. I can help you pick the right specialist, check hospital timings, or navigate queue tokens. How can I help you today?`;
+          ? t('chat_greeting_with_name', `Hello {name}! 👋 I'm your SmartQueue Assistant. I can help you pick the right specialist, check hospital timings, or navigate queue tokens. How can I help you today?`).replace('{name}', p.fname || pName)
+          : t('chat_greeting', `Hello! 👋 I'm your SmartQueue Assistant. I can help you pick the right specialist, check hospital timings, or navigate queue tokens. How can I help you today?`);
         addMsg('bot', greeting);
-        showQR(QUICK_INIT);
+        const quickItems = t('chat_quick_replies') || QUICK_INIT;
+        showQR(quickItems);
       }
 
       function showQR(items) {
@@ -3341,7 +4386,7 @@ Be concise, warm and helpful. Support Hindi or English.`;
 
         const typing = document.createElement('div');
         typing.className = 'text-slate-400 italic text-[11px] pl-2 flex items-center gap-1.5';
-        typing.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span> SmartQueue AI is thinking...`;
+        typing.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span> ${t('chat_thinking', 'SmartQueue AI is thinking...')}`;
         msgsEl.appendChild(typing);
         msgsEl.scrollTop = msgsEl.scrollHeight;
 
@@ -3361,7 +4406,8 @@ Be concise, warm and helpful. Support Hindi or English.`;
         const payload = JSON.stringify({
           message: userQuery,
           history: chatHistory,
-          patientContext: patientContext
+          patientContext: patientContext,
+          language: currentLang
         });
 
         // Try local server endpoint first, then direct localhost:8080 fallback
@@ -3394,7 +4440,7 @@ Be concise, warm and helpful. Support Hindi or English.`;
           addMsg('bot', cleanReply, result.provider);
           chatHistory.push({ role: 'model', parts: [{ text: cleanReply }] });
         } else {
-          addMsg('bot', "Could not reach the SmartQueue AI service. Please make sure the server is started with 'npm start' on port 8080.");
+          addMsg('bot', t('chat_offline_msg', "Could not reach the SmartQueue AI service. Please make sure the server is started with 'npm start' on port 8080."));
         }
         isLoading = false;
       }
@@ -3440,20 +4486,22 @@ Be concise, warm and helpful. Support Hindi or English.`;
           micBtn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-200');
         }
         if (micPulse) micPulse.classList.add('hidden');
-        inputEl.placeholder = "Ask about symptoms, doctors, hospitals...";
+        inputEl.placeholder = t('chat_placeholder', "Ask about symptoms, doctors, hospitals...");
       }
 
       if (SpeechRecognition) {
         recognition = new SpeechRecognition();
-        recognition.lang = 'en-IN';
+        const initialLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
+        recognition.lang = initialLangObj.speechLang;
         recognition.interimResults = false;
+        window._smartQueueRecognition = recognition;
 
         recognition.onstart = () => {
           isListening = true;
           micBtn.classList.add('bg-red-50', 'text-red-600', 'border-red-300');
           micBtn.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-200');
           if (micPulse) micPulse.classList.remove('hidden');
-          inputEl.placeholder = "🎙️ Listening... Speak now";
+          inputEl.placeholder = t('chat_listening', "🎙️ Listening... Speak now");
         };
 
         recognition.onresult = (e) => {
@@ -3473,20 +4521,42 @@ Be concise, warm and helpful. Support Hindi or English.`;
               recognition.stop();
               stopMic();
             } else {
+              const curLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
+              recognition.lang = curLangObj.speechLang;
               try {
                 recognition.start();
               } catch (err) {
                 recognition.stop();
-                setTimeout(() => recognition.start(), 150);
+                setTimeout(() => {
+                  recognition.lang = curLangObj.speechLang;
+                  recognition.start();
+                }, 150);
               }
             }
           });
         }
       } else if (micBtn) {
         micBtn.onclick = () => {
-          alert("Speech recognition is not supported in this browser. Please try Chrome.");
+          alert(t('chat_speech_unsupported', "Speech recognition is not supported in this browser. Please try Chrome."));
         };
       }
+
+      window._updateChatLanguage = function(lang) {
+        const langObj = SUPPORTED_LANGUAGES.find(l => l.code === lang) || SUPPORTED_LANGUAGES[0];
+        if (recognition) {
+          recognition.lang = langObj.speechLang;
+        }
+        if (!isListening) {
+          inputEl.placeholder = t('chat_placeholder', "Ask about symptoms, doctors, hospitals...");
+        }
+        if (chatHistory.length === 0) {
+          msgsEl.innerHTML = '';
+          greet();
+        } else {
+          const quickReplies = t('chat_quick_replies') || QUICK_INIT;
+          showQR(quickReplies);
+        }
+      };
 
       sendEl.addEventListener('click', () => send(inputEl.value));
       inputEl.addEventListener('keydown', e => {
@@ -3612,8 +4682,10 @@ Be concise, warm and helpful. Support Hindi or English.`;
     // HIGH-END LANDING PAGE INTERACTION & SCROLL REVEALS
     // ==========================================
     (function initLandingAnimations() {
-      // 1. Intersection Observer for Scroll Reveals
+      // 1. Mark all reveal items immediately so content is ALWAYS loaded and visible
       const revealItems = document.querySelectorAll('.reveal-item');
+      revealItems.forEach(item => item.classList.add('is-revealed'));
+
       if ('IntersectionObserver' in window && revealItems.length > 0) {
         const revealObserver = new IntersectionObserver((entries, observer) => {
           entries.forEach(entry => {
@@ -3622,15 +4694,9 @@ Be concise, warm and helpful. Support Hindi or English.`;
               observer.unobserve(entry.target);
             }
           });
-        }, {
-          threshold: 0.1,
-          rootMargin: '0px 0px -40px 0px'
-        });
+        }, { threshold: 0.05 });
 
         revealItems.forEach(item => revealObserver.observe(item));
-      } else {
-        // Fallback: reveal all immediately if IntersectionObserver is unavailable
-        revealItems.forEach(item => item.classList.add('is-revealed'));
       }
 
       // 2. Metrics Counter Animation
@@ -3691,6 +4757,131 @@ Be concise, warm and helpful. Support Hindi or English.`;
         }, 5000);
       }
     })();
+
+    // ==============================================================================
+    // SMARTQUEUE SUPABASE GOOGLE AUTH SYNCHRONIZATION
+    // ==============================================================================
+    function syncUserAuthState(user) {
+      const headerAuthBtn = document.getElementById('headerGoogleAuthBtn');
+      const headerProfilePill = document.getElementById('headerUserProfilePill');
+      const headerUserAvatar = document.getElementById('headerUserAvatar');
+      const headerUserName = document.getElementById('headerUserName');
+      const mobileGoogleAuthBtn = document.getElementById('mobileGoogleAuthBtn');
+      const mobileUserProfileCard = document.getElementById('mobileUserProfileCard');
+      const mobileUserAvatar = document.getElementById('mobileUserAvatar');
+      const mobileUserName = document.getElementById('mobileUserName');
+      const mobileUserEmail = document.getElementById('mobileUserEmail');
+      const navPatientBadge = document.getElementById('navPatientBadge');
+      const navPatientName = document.getElementById('navPatientName');
+
+      if (user) {
+        const email = user.email || '';
+        const metadata = user.user_metadata || {};
+        const fullName = metadata.full_name || metadata.name || email.split('@')[0] || 'Patient';
+        const avatarUrl = metadata.avatar_url || metadata.picture || 
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=2563eb&color=fff&bold=true`;
+
+        if (headerAuthBtn) headerAuthBtn.classList.add('hidden');
+        if (headerProfilePill) {
+          headerProfilePill.classList.remove('hidden');
+          headerProfilePill.classList.add('flex');
+        }
+        if (headerUserAvatar) headerUserAvatar.src = avatarUrl;
+        if (headerUserName) headerUserName.textContent = fullName.split(' ')[0];
+
+        if (mobileGoogleAuthBtn) mobileGoogleAuthBtn.classList.add('hidden');
+        if (mobileUserProfileCard) {
+          mobileUserProfileCard.classList.remove('hidden');
+          mobileUserProfileCard.classList.add('flex');
+        }
+        if (mobileUserAvatar) mobileUserAvatar.src = avatarUrl;
+        if (mobileUserName) mobileUserName.textContent = fullName;
+        if (mobileUserEmail) mobileUserEmail.textContent = email;
+
+        if (navPatientBadge && navPatientName) {
+          navPatientBadge.classList.remove('hidden');
+          navPatientName.textContent = fullName.split(' ')[0];
+        }
+
+        // Auto-fill intake inputs (Screen 1) if present and currently blank
+        const fnameInput = document.getElementById('fname');
+        const lnameInput = document.getElementById('lname');
+        const emailInput = document.getElementById('email');
+        if (fnameInput && !fnameInput.value) {
+          const parts = fullName.split(' ');
+          fnameInput.value = parts[0] || '';
+          if (lnameInput && !lnameInput.value && parts.length > 1) {
+            lnameInput.value = parts.slice(1).join(' ');
+          }
+        }
+        if (emailInput && !emailInput.value && email) {
+          emailInput.value = email;
+        }
+      } else {
+        if (headerAuthBtn) headerAuthBtn.classList.remove('hidden');
+        if (headerProfilePill) {
+          headerProfilePill.classList.add('hidden');
+          headerProfilePill.classList.remove('flex');
+        }
+        if (mobileGoogleAuthBtn) mobileGoogleAuthBtn.classList.remove('hidden');
+        if (mobileUserProfileCard) {
+          mobileUserProfileCard.classList.add('hidden');
+          mobileUserProfileCard.classList.remove('flex');
+        }
+      }
+    }
+
+    async function checkSupabaseSession() {
+      try {
+        if (window.smartQueueAuth) {
+          const session = await window.smartQueueAuth.getSession();
+          if (session && session.user) {
+            syncUserAuthState(session.user);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // Fallback to localStorage cached session
+      try {
+        const cached = localStorage.getItem('smartqueue_user');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.loggedIn && parsed.email) {
+            syncUserAuthState({
+              email: parsed.email,
+              user_metadata: { full_name: parsed.name, avatar_url: parsed.avatar }
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+
+      syncUserAuthState(null);
+    }
+
+    async function smartQueueSignOut() {
+      if (window.smartQueueAuth) {
+        await window.smartQueueAuth.signOut();
+      }
+      try {
+        localStorage.removeItem('smartqueue_user');
+      } catch (e) {}
+      syncUserAuthState(null);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkSupabaseSession();
+      if (window.smartQueueAuth && window.smartQueueAuth.client) {
+        window.smartQueueAuth.client.auth.onAuthStateChange((event, session) => {
+          if (event === 'SIGNED_IN' && session && session.user) {
+            syncUserAuthState(session.user);
+          } else if (event === 'SIGNED_OUT') {
+            syncUserAuthState(null);
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>

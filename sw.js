@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smartqueue-v1.0.3';
+const CACHE_NAME = 'smartqueue-v1.0.8';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

@@ -84,7 +84,7 @@ RESPONSE FORMAT:
 ═══════════════════════════════════════════════════════════
 - Plain, natural sentences — no markdown, no bullet points, no headers in your replies (this is a chat interface for patients, keep it simple).
 - One clear question or one clear confirmation per message.
-- You seamlessly understand and respond in English, Hindi, or Hinglish based on the user's input. Keep answers clear, concise, and easy to read on mobile.
+- You seamlessly understand and respond in English, Hindi (हिन्दी), Tamil (தமிழ்), Malayalam (മലയാളം), or the patient's preferred language. Keep answers clear, concise, and easy to read on mobile.
 
 ═══════════════════════════════════════════════════════════
 DOCTOR & SPECIALTY MATCHING:
@@ -277,6 +277,25 @@ MANDATORY RULES FOR NAMES IN YOUR RESPONSES:
 3. DOCTOR & HOSPITAL NAMES: Always mention concrete doctor names (like Dr. Priya Sharma, Dr. Rohan Mehta, etc.) and hospital names (like AIIMS Rishikesh, Himalayan Institute, etc.) rather than speaking in vague terms.
 ══════════════════════════════════════════════════════════════`;
 
+  const preferredLang = patientContext?.language || 'en';
+  const langMap = {
+    hi: 'Hindi (हिन्दी)',
+    ta: 'Tamil (தமிழ்)',
+    ml: 'Malayalam (മലയാളം)',
+    en: 'English'
+  };
+  const langName = langMap[preferredLang] || 'English';
+
+  dynamicSystem += "\n\n--------------------------------------------------------------\n" +
+    "PREFERRED RESPONSE LANGUAGE:\n" +
+    "- Selected Language: " + langName + " (" + preferredLang + ")\n" +
+    (preferredLang === 'hi' ? "- The patient selected Hindi. You MUST answer in natural, courteous Hindi (हिन्दी / Devanagari script). Maintain clinical accuracy, specialist guidance, and queue tokens.\n" : "") +
+    (preferredLang === 'ta' ? "- The patient selected Tamil. You MUST answer in natural, courteous Tamil (தமிழ் script). Maintain clinical accuracy, specialist guidance, and queue tokens.\n" : "") +
+    (preferredLang === 'ml' ? "- The patient selected Malayalam. You MUST answer in natural, courteous Malayalam (മലയാളം script). Maintain clinical accuracy, specialist guidance, and queue tokens.\n" : "") +
+    (preferredLang === 'en' ? "- The patient selected English. Answer in polite, natural English.\n" : "") +
+    "- If the patient speaks or asks in a specific language in their message, adapt seamlessly and answer in that language.\n" +
+    "--------------------------------------------------------------";
+
   const openRouterMessages = [
     { role: 'system', content: dynamicSystem }
   ];
@@ -435,7 +454,11 @@ async function handleChatRequest(req, res) {
     const payload = await parseRequestBody(req);
     const message = payload.message || payload.query || (payload.history?.slice(-1)[0]?.parts?.[0]?.text) || '';
     const history = payload.history || [];
-    const patientContext = payload.patientContext || null;
+    let patientContext = payload.patientContext || null;
+    if (payload.language) {
+      if (!patientContext) patientContext = {};
+      patientContext.language = payload.language;
+    }
 
     if (!message && history.length === 0) {
       return sendResponse(res, 400, { error: 'Message or history is required' });
