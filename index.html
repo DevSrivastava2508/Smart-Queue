@@ -911,9 +911,35 @@
       
       <!-- Brand Logo -->
       <a class="inline-flex items-center gap-2.5 group" href="#" onclick="goToScreen(0); return false;" title="Return to Landing Page">
-        <div class="w-8 h-8 rounded-lg bg-black flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24">
-            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+        <div class="w-8 h-8 rounded-lg shadow-xs transition-transform group-hover:scale-105 shrink-0 overflow-hidden">
+          <svg class="w-full h-full" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sqBgNav" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0B0F19"/>
+                <stop offset="50%" stop-color="#101828"/>
+                <stop offset="100%" stop-color="#0F172A"/>
+              </linearGradient>
+              <linearGradient id="sqCrossNav" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#34D399"/>
+                <stop offset="100%" stop-color="#059669"/>
+              </linearGradient>
+              <linearGradient id="sqPulseNav" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38BDF8"/>
+                <stop offset="100%" stop-color="#0284C7"/>
+              </linearGradient>
+              <filter id="sqGlowNav" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#10B981" flood-opacity="0.45"/>
+              </filter>
+            </defs>
+            <rect width="512" height="512" rx="128" fill="url(#sqBgNav)"/>
+            <rect x="8" y="8" width="496" height="496" rx="120" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="12"/>
+            <g filter="url(#sqGlowNav)">
+              <rect x="211" y="102" width="90" height="308" rx="45" fill="url(#sqCrossNav)"/>
+              <rect x="102" y="211" width="308" height="90" rx="45" fill="url(#sqCrossNav)"/>
+            </g>
+            <path d="M 140 256 H 195 L 225 180 L 285 332 L 315 256 H 372" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="390" cy="122" r="32" fill="url(#sqPulseNav)"/>
+            <circle cx="390" cy="122" r="54" stroke="#38BDF8" stroke-width="14" stroke-opacity="0.65"/>
           </svg>
         </div>
         <span class="font-bold text-base sm:text-lg text-[#101828] tracking-tight">SmartQueue</span>
@@ -968,9 +994,35 @@
         
         <!-- Brand Logo (Single-line, Clean, Authoritative) -->
         <a href="#" onclick="goToScreen(0); return false;" class="inline-flex items-center gap-2.5 group shrink-0" title="SmartQueue Home">
-          <div class="w-9 h-9 rounded-xl bg-slate-950 flex items-center justify-center text-white shadow-xs transition-transform group-hover:scale-105 shrink-0">
-            <svg class="w-4.5 h-4.5 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+          <div class="w-9 h-9 rounded-xl shadow-xs transition-transform group-hover:scale-105 shrink-0 overflow-hidden">
+            <svg class="w-full h-full" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="sqBgLanding" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0B0F19"/>
+                  <stop offset="50%" stop-color="#101828"/>
+                  <stop offset="100%" stop-color="#0F172A"/>
+                </linearGradient>
+                <linearGradient id="sqCrossLanding" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#34D399"/>
+                  <stop offset="100%" stop-color="#059669"/>
+                </linearGradient>
+                <linearGradient id="sqPulseLanding" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#38BDF8"/>
+                  <stop offset="100%" stop-color="#0284C7"/>
+                </linearGradient>
+                <filter id="sqGlowLanding" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#10B981" flood-opacity="0.45"/>
+                </filter>
+              </defs>
+              <rect width="512" height="512" rx="128" fill="url(#sqBgLanding)"/>
+              <rect x="8" y="8" width="496" height="496" rx="120" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="12"/>
+              <g filter="url(#sqGlowLanding)">
+                <rect x="211" y="102" width="90" height="308" rx="45" fill="url(#sqCrossLanding)"/>
+                <rect x="102" y="211" width="308" height="90" rx="45" fill="url(#sqCrossLanding)"/>
+              </g>
+              <path d="M 140 256 H 195 L 225 180 L 285 332 L 315 256 H 372" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="390" cy="122" r="32" fill="url(#sqPulseLanding)"/>
+              <circle cx="390" cy="122" r="54" stroke="#38BDF8" stroke-width="14" stroke-opacity="0.65"/>
             </svg>
           </div>
           <div class="flex items-center gap-2">
@@ -2031,8 +2083,36 @@
           
           <div class="md:col-span-2">
             <div class="flex items-center gap-2.5 mb-3">
-              <div class="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center text-white font-bold text-sm">
-                SQ
+              <div class="w-8 h-8 rounded-lg shadow-xs shrink-0 overflow-hidden">
+                <svg class="w-full h-full" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="sqBgFoot" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#0B0F19"/>
+                      <stop offset="50%" stop-color="#101828"/>
+                      <stop offset="100%" stop-color="#0F172A"/>
+                    </linearGradient>
+                    <linearGradient id="sqCrossFoot" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#34D399"/>
+                      <stop offset="100%" stop-color="#059669"/>
+                    </linearGradient>
+                    <linearGradient id="sqPulseFoot" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#38BDF8"/>
+                      <stop offset="100%" stop-color="#0284C7"/>
+                    </linearGradient>
+                    <filter id="sqGlowFoot" x="-20%" y="-20%" width="140%" height="140%">
+                      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#10B981" flood-opacity="0.45"/>
+                    </filter>
+                  </defs>
+                  <rect width="512" height="512" rx="128" fill="url(#sqBgFoot)"/>
+                  <rect x="8" y="8" width="496" height="496" rx="120" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="12"/>
+                  <g filter="url(#sqGlowFoot)">
+                    <rect x="211" y="102" width="90" height="308" rx="45" fill="url(#sqCrossFoot)"/>
+                    <rect x="102" y="211" width="308" height="90" rx="45" fill="url(#sqCrossFoot)"/>
+                  </g>
+                  <path d="M 140 256 H 195 L 225 180 L 285 332 L 315 256 H 372" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="390" cy="122" r="32" fill="url(#sqPulseFoot)"/>
+                  <circle cx="390" cy="122" r="54" stroke="#38BDF8" stroke-width="14" stroke-opacity="0.65"/>
+                </svg>
               </div>
               <span class="font-extrabold text-lg text-slate-900 tracking-tight">SmartQueue</span>
             </div>
@@ -2093,9 +2173,35 @@
         <!-- Top Brand Header -->
         <header class="mb-4 lg:mb-6 flex items-center gap-3 sm:gap-4 flex-wrap" data-purpose="brand-header">
           <a class="inline-flex items-center gap-2.5 group" href="#" onclick="goToScreen(0); return false;" title="Return to Landing Page">
-            <div class="w-8 h-8 rounded-lg bg-black flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24">
-                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+            <div class="w-8 h-8 rounded-lg shadow-xs transition-transform group-hover:scale-105 shrink-0 overflow-hidden">
+              <svg class="w-full h-full" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="sqBgS1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#0B0F19"/>
+                    <stop offset="50%" stop-color="#101828"/>
+                    <stop offset="100%" stop-color="#0F172A"/>
+                  </linearGradient>
+                  <linearGradient id="sqCrossS1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34D399"/>
+                    <stop offset="100%" stop-color="#059669"/>
+                  </linearGradient>
+                  <linearGradient id="sqPulseS1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#38BDF8"/>
+                    <stop offset="100%" stop-color="#0284C7"/>
+                  </linearGradient>
+                  <filter id="sqGlowS1" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#10B981" flood-opacity="0.45"/>
+                  </filter>
+                </defs>
+                <rect width="512" height="512" rx="128" fill="url(#sqBgS1)"/>
+                <rect x="8" y="8" width="496" height="496" rx="120" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="12"/>
+                <g filter="url(#sqGlowS1)">
+                  <rect x="211" y="102" width="90" height="308" rx="45" fill="url(#sqCrossS1)"/>
+                  <rect x="102" y="211" width="308" height="90" rx="45" fill="url(#sqCrossS1)"/>
+                </g>
+                <path d="M 140 256 H 195 L 225 180 L 285 332 L 315 256 H 372" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="390" cy="122" r="32" fill="url(#sqPulseS1)"/>
+                <circle cx="390" cy="122" r="54" stroke="#38BDF8" stroke-width="14" stroke-opacity="0.65"/>
               </svg>
             </div>
             <span class="font-bold text-lg text-[#101828] tracking-tight">SmartQueue</span>

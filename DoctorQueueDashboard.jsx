@@ -448,11 +448,43 @@ export default function DoctorQueueDashboard() {
       {/* Top Header Panel */}
       <div className="mx-auto max-w-6xl mb-4 flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-200 pb-4 gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl">🩺</span>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">SmartQueue Dedicated Doctor Workstation</h1>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl shadow-xs shrink-0 overflow-hidden">
+              <svg className="w-full h-full" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="sqBgDocReact" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#0B0F19"/>
+                    <stop offset="50%" stopColor="#101828"/>
+                    <stop offset="100%" stopColor="#0F172A"/>
+                  </linearGradient>
+                  <linearGradient id="sqCrossDocReact" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#34D399"/>
+                    <stop offset="100%" stopColor="#059669"/>
+                  </linearGradient>
+                  <linearGradient id="sqPulseDocReact" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#38BDF8"/>
+                    <stop offset="100%" stopColor="#0284C7"/>
+                  </linearGradient>
+                  <filter id="sqGlowDocReact" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="12" stdDeviation="18" floodColor="#10B981" floodOpacity="0.45"/>
+                  </filter>
+                </defs>
+                <rect width="512" height="512" rx="128" fill="url(#sqBgDocReact)"/>
+                <rect x="8" y="8" width="496" height="496" rx="120" stroke="#FFFFFF" strokeOpacity="0.12" strokeWidth="12"/>
+                <g filter="url(#sqGlowDocReact)">
+                  <rect x="211" y="102" width="90" height="308" rx="45" fill="url(#sqCrossDocReact)"/>
+                  <rect x="102" y="211" width="308" height="90" rx="45" fill="url(#sqCrossDocReact)"/>
+                </g>
+                <path d="M 140 256 H 195 L 225 180 L 285 332 L 315 256 H 372" stroke="#FFFFFF" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="390" cy="122" r="32" fill="url(#sqPulseDocReact)"/>
+                <circle cx="390" cy="122" r="54" stroke="#38BDF8" strokeWidth="14" strokeOpacity="0.65"/>
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">SmartQueue Dedicated Doctor Workstation</h1>
+              <p className="text-sm text-slate-500 mt-0.5">MMG District Hospital • General Medicine &amp; Ortho Wing (Chamber #104)</p>
+            </div>
           </div>
-          <p className="text-sm text-slate-500 mt-1">MMG District Hospital • General Medicine &amp; Ortho Wing (Chamber #104)</p>
         </div>
         
         {/* Navigation & Connection Badges */}

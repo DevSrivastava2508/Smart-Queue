@@ -1,24 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#101828"/>
-      <stop offset="100%" stop-color="#1e293b"/>
+    <linearGradient id="sqBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0F19"/>
+      <stop offset="50%" stop-color="#101828"/>
+      <stop offset="100%" stop-color="#0F172A"/>
     </linearGradient>
-    <linearGradient id="cross" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#10b981"/>
+    <linearGradient id="sqCross" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
       <stop offset="100%" stop-color="#059669"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.3"/>
+    <linearGradient id="sqPulse" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <filter id="sqGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#10B981" flood-opacity="0.38"/>
     </filter>
   </defs>
-  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
-  <!-- Medical Plus Cross -->
-  <g filter="url(#shadow)">
-    <rect x="216" y="116" width="80" height="280" rx="40" fill="url(#cross)"/>
-    <rect x="116" y="216" width="280" height="80" rx="40" fill="url(#cross)"/>
+  <!-- Background Squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#sqBg)"/>
+  <rect x="8" y="8" width="496" height="496" rx="120" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="12"/>
+
+  <!-- Medical Plus Cross with Soft Glow -->
+  <g filter="url(#sqGlow)">
+    <rect x="211" y="102" width="90" height="308" rx="45" fill="url(#sqCross)"/>
+    <rect x="102" y="211" width="308" height="90" rx="45" fill="url(#sqCross)"/>
   </g>
-  <!-- Queue Spark Pulse -->
-  <circle cx="370" cy="142" r="26" fill="#38bdf8"/>
-  <circle cx="370" cy="142" r="38" fill="none" stroke="#38bdf8" stroke-width="6" opacity="0.5"/>
+
+  <!-- ECG / Smart Queue Pulse Wave through center -->
+  <path d="M 140 256 H 195 L 225 180 L 285 332 L 315 256 H 372" fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Live Queue Signal Spark -->
+  <circle cx="390" cy="122" r="32" fill="url(#sqPulse)"/>
+  <circle cx="390" cy="122" r="54" fill="none" stroke="#38BDF8" stroke-width="14" stroke-opacity="0.6"/>
 </svg>
