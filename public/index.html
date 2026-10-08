@@ -948,7 +948,11 @@
         </div>
         <button onclick="goToScreen(5)" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-[#D0D5DD] bg-white hover:bg-slate-50 transition-colors shadow-xs text-[#344054] flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span id="navLiveQueueLabel" class="hidden sm:inline">Live Queue</span>
+          <span id="navLiveQueueLabel" class="hidden sm:inline" data-i18n="nav_live_queue">Live Queue</span>
+        </button>
+        <button onclick="openDoctorConsoleFromNav()" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-[#D0D5DD] bg-white hover:bg-slate-50 transition-colors shadow-xs text-[#344054] flex items-center gap-1.5" title="Doctor Console">
+          <span class="text-xs">👨‍⚕️</span>
+          <span class="hidden md:inline" data-i18n="nav_doctor_console">Doctor Console</span>
         </button>
       </div>
 
@@ -979,13 +983,17 @@
         </a>
 
         <!-- Desktop Navigation Links (Generous Spacing, Curated) -->
-        <nav class="hidden lg:flex items-center gap-8 text-[13px] font-semibold text-slate-600">
+        <nav class="hidden lg:flex items-center gap-7 text-[13px] font-semibold text-slate-600">
           <a href="#doctors-section" data-i18n="nav_specialists" class="hover:text-slate-950 transition-colors">Specialists</a>
           <a href="#hospitals-section" data-i18n="nav_hospitals" class="hover:text-slate-950 transition-colors">Hospitals</a>
           <a href="#how-it-works" data-i18n="nav_how_it_works" class="hover:text-slate-950 transition-colors">How It Works</a>
           <a href="#" onclick="goToScreen(5); return false;" class="hover:text-slate-950 transition-colors inline-flex items-center gap-1.5 text-slate-700 font-bold group">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span data-i18n="nav_live_queue">Live Queue</span>
+          </a>
+          <a href="#doctor-console" onclick="openDoctorConsoleFromNav(); return false;" class="hover:text-slate-950 transition-colors inline-flex items-center gap-1.5 text-slate-700 font-bold group">
+            <span class="text-xs">👨‍⚕️</span>
+            <span data-i18n="nav_doctor_console">Doctor Console</span>
           </a>
           <a href="#faq-section" data-i18n="nav_faq" class="hover:text-slate-950 transition-colors">FAQ</a>
         </nav>
@@ -1045,6 +1053,13 @@
               <span data-i18n="nav_live_queue">Live Queue</span>
             </span>
             <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold uppercase">OPD</span>
+          </a>
+          <a href="#doctor-console" onclick="openDoctorConsoleFromNav(); toggleMobileMenu(false); return false;" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-between text-slate-900 font-bold">
+            <span class="flex items-center gap-2">
+              <span>👨‍⚕️</span>
+              <span data-i18n="nav_doctor_console">Doctor Console</span>
+            </span>
+            <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold uppercase">Chamber 104</span>
           </a>
           <a href="#faq-section" onclick="toggleMobileMenu(false)" data-i18n="nav_faq" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">FAQ</a>
         </div>
@@ -1163,91 +1178,226 @@
               <span>Live Queue Sync Active</span>
             </div>
 
-            <!-- Live OPD Counter Board Card -->
-            <div class="kiosk-animated-border text-white rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-800 relative overflow-hidden">
+            <!-- Live OPD Counter Board Card & Interactive Doctor Console -->
+            <div id="doctor-console" class="scroll-mt-28"></div>
+            <div id="kioskContainer" class="kiosk-animated-border text-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-800 relative overflow-hidden transition-all duration-300">
               
               <!-- Subtle card background glow -->
               <div class="absolute top-0 right-0 w-48 h-48 bg-blue-600/20 rounded-full filter blur-3xl pointer-events-none"></div>
 
-              <!-- Top Bar of Kiosk Display -->
-              <div class="flex items-center justify-between pb-4 border-b border-slate-800/80 mb-5 text-xs">
+              <!-- Top Bar of Kiosk Display: Location & Mode Switcher -->
+              <div class="flex flex-wrap items-center justify-between pb-3.5 border-b border-slate-800/80 mb-4 gap-2 text-xs">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="radar-beacon w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
+                  <span class="font-bold tracking-wide text-slate-200 uppercase text-[11px] truncate">MMG District Hospital • OPD Wing 2</span>
+                </div>
+                <!-- Interactive Mode Toggle -->
+                <div class="inline-flex p-0.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-[11px] font-semibold shrink-0">
+                  <button type="button" id="kioskTabPatient" onclick="setKioskViewMode('patient')" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white shadow-xs transition-all cursor-pointer">
+                    📺 Patient View
+                  </button>
+                  <button type="button" id="kioskTabDoctor" onclick="setKioskViewMode('doctor')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-1.5">
+                    <span>👨‍⚕️ Doctor Console</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Emergency Ward Delay Alert Banner (Dynamically shown) -->
+              <div id="kioskDelayBanner" class="hidden mb-4 p-3 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-xs flex items-center justify-between gap-2.5 animate-pulse">
                 <div class="flex items-center gap-2">
-                  <span class="radar-beacon w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                  <span class="font-bold tracking-wide text-slate-200 uppercase text-[11px]">MMG District Hospital • OPD Wing 2</span>
+                  <span class="text-base">🚨</span>
+                  <div>
+                    <span class="font-bold text-rose-300">OPD Ward Delay in Progress (+<span id="kioskDelayMinsVal">15</span> mins)</span>
+                    <p id="kioskDelayReasonVal" class="text-[11px] text-rose-200/80 mt-0.5">Doctor attending emergency patient in Trauma Ward. Staggered arrival active.</p>
+                  </div>
                 </div>
-                <span class="font-mono text-slate-400 text-[11px]">Chamber #104</span>
+                <button type="button" onclick="doctorToggleDelay(0)" class="text-[10px] underline text-rose-300 hover:text-white shrink-0 cursor-pointer">Resolve</button>
               </div>
 
-              <!-- Doctor Status & Info -->
-              <div class="flex items-center gap-3.5 mb-6">
-                <img class="w-12 h-12 rounded-2xl object-cover border-2 border-slate-700 shadow-md" src="images/doctors/dr-priya-sharma.jpg" alt="Dr. Priya Sharma"/>
-                <div>
-                  <h4 class="font-bold text-base text-white">Dr. Priya Sharma</h4>
-                  <p class="text-xs text-blue-400 font-medium">General Medicine • Senior Consultant</p>
-                  <div class="flex items-center gap-2 mt-0.5 text-[11px] text-emerald-400 font-semibold">
-                    <span>● In Chamber</span>
-                    <span class="text-slate-500">•</span>
-                    <span class="text-slate-400 font-normal">Avg 6m per consultation</span>
+              <!-- Simulated Instant Mobile SMS Push Toast (Slides down on events) -->
+              <div id="simulatedSmsToast" class="hidden mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/60 border border-amber-500/40 shadow-xl text-left text-white transition-all duration-300 relative">
+                <div class="flex items-start gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm shrink-0 border border-amber-500/30">
+                    💬
                   </div>
-                </div>
-              </div>
-
-              <!-- Primary Token Served Banner -->
-              <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 mb-5 text-center relative glow-badge-pulse">
-                <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400 block mb-1">Now Consulting (Serving Now)</span>
-                <div id="simCurrentTokenNum" class="text-4xl sm:text-5xl font-extrabold tracking-tight font-mono text-emerald-400 transition-all duration-300">
-                  #SQ-1042
-                </div>
-                <div class="mt-2 flex items-center justify-center gap-2 text-xs text-slate-400">
-                  <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                  <span>Consultation Elapsed: <strong>4 mins</strong></span>
-                </div>
-              </div>
-
-              <!-- Queue Pipeline (Next Up) -->
-              <div class="space-y-2 mb-5">
-                <div class="flex items-center justify-between text-xs text-slate-400 px-1 font-semibold">
-                  <span>Up Next in Line</span>
-                  <span>Est. Wait Time</span>
-                </div>
-
-                <div class="flex items-center justify-between bg-slate-900/60 hover:bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800/60 text-xs transition-colors">
-                  <div class="flex items-center gap-2 font-mono font-bold text-white">
-                    <span class="text-amber-400">▶</span>
-                    <span id="simNextTokenNum">#SQ-1043</span>
-                    <span class="text-[10px] text-slate-400 font-sans font-normal">(You're 1st next)</span>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="font-bold text-amber-400 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                        AUTOMATED PATIENT SMS TRIGGERED
+                      </span>
+                      <span id="smsToastTimestamp" class="text-[10px] text-slate-400">Just now</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-0.5 font-mono">Dispatched to: <span id="smsToastRecipient" class="text-slate-300 font-semibold">+91 98765 43210</span></p>
+                    <div id="smsToastMessage" class="text-xs text-amber-100/90 mt-1.5 p-2 rounded-xl bg-slate-950/80 border border-slate-800 leading-relaxed font-sans">
+                      ...
+                    </div>
                   </div>
-                  <span class="font-semibold text-amber-400">~4 mins</span>
-                </div>
-
-                <div class="flex items-center justify-between bg-slate-900/40 px-3.5 py-2 rounded-xl border border-slate-800/40 text-xs text-slate-300">
-                  <div class="flex items-center gap-2 font-mono">
-                    <span class="text-slate-500">2.</span>
-                    <span id="simNextTokenNum2">#SQ-1044</span>
-                  </div>
-                  <span class="text-slate-400 font-mono">~10 mins</span>
-                </div>
-
-                <div class="flex items-center justify-between bg-slate-900/40 px-3.5 py-2 rounded-xl border border-slate-800/40 text-xs text-slate-300">
-                  <div class="flex items-center gap-2 font-mono">
-                    <span class="text-slate-500">3.</span>
-                    <span id="simNextTokenNum3">#SQ-1045</span>
-                  </div>
-                  <span class="text-slate-400 font-mono">~16 mins</span>
+                  <button type="button" onclick="dismissSmsToast()" class="text-slate-400 hover:text-white text-xs p-1 cursor-pointer">✕</button>
                 </div>
               </div>
 
-              <!-- Interactive Simulator Button & Booking Action -->
-              <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
-                <button type="button" onclick="simNextToken()" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer" title="Click to advance queue simulator">
-                  <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m13 17 5-5-5-5M6 17l5-5-5-5"/></svg>
-                  <span>Simulate Next Turn</span>
-                </button>
+              <!-- VIEW 1: PATIENT WAITING ROOM DISPLAY -->
+              <div id="kioskPatientView" class="space-y-4">
+                <!-- Doctor Status & Info -->
+                <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-2xl border border-slate-800/80">
+                  <div class="flex items-center gap-3">
+                    <img class="w-11 h-11 rounded-xl object-cover border border-slate-700 shadow-sm" src="images/doctors/dr-priya-sharma.jpg" alt="Dr. Priya Sharma"/>
+                    <div>
+                      <h4 class="font-bold text-sm text-white">Dr. Priya Sharma</h4>
+                      <p class="text-xs text-blue-400 font-medium">General Medicine • Senior Consultant</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] font-semibold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 inline-block">● Chamber #104</span>
+                    <span class="text-[10px] text-slate-400 block mt-1">Avg 6m / patient</span>
+                  </div>
+                </div>
 
-                <button type="button" onclick="goToScreen(1)" class="btn-shine-sweep flex-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5">
-                  <span>Get My Token</span>
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
+                <!-- Primary Token Served Banner -->
+                <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-5 text-center relative glow-badge-pulse shadow-inner">
+                  <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400 block mb-1">Now Consulting in Chamber</span>
+                  <div id="kioskServingToken" class="text-4xl sm:text-5xl font-extrabold tracking-tight font-mono text-emerald-400 transition-all duration-300">
+                    #SQ-1042
+                  </div>
+                  <p id="kioskServingPatient" class="text-xs text-slate-300 mt-1 font-medium">
+                    Aarav Kumar <span class="text-slate-500">•</span> 42y Male
+                  </p>
+                  <div class="mt-2.5 flex items-center justify-center gap-2 text-xs text-slate-400">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Consultation Elapsed: <strong id="kioskServingElapsed" class="text-white">4 mins</strong></span>
+                  </div>
+                </div>
+
+                <!-- On-Hold Buffer Section (Dynamically rendered if patients are held) -->
+                <div id="kioskOnHoldWrap" class="hidden">
+                  <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <span>⏸️ Buffer Queue (On Hold)</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 border border-amber-500/30 font-normal">2-Slot Grace Buffer</span>
+                  </div>
+                  <div id="kioskOnHoldList" class="space-y-1.5">
+                    <!-- Populated via JS -->
+                  </div>
+                </div>
+
+                <!-- Up Next Queue Pipeline -->
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between text-xs text-slate-400 px-1 font-semibold">
+                    <span>Up Next in Line</span>
+                    <span>Est. Consultation Time</span>
+                  </div>
+                  <div id="kioskUpNextList" class="space-y-1.5">
+                    <!-- Populated via JS -->
+                  </div>
+                </div>
+
+                <!-- Patient View Bottom Actions -->
+                <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+                  <button type="button" onclick="setKioskViewMode('doctor')" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
+                    <span>👨‍⚕️ Switch to Doctor Console</span>
+                  </button>
+                  <button type="button" onclick="goToScreen(1)" class="btn-shine-sweep flex-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>Get My Token</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- VIEW 2: DOCTOR CHAMBER WORKSTATION CONSOLE -->
+              <div id="kioskDoctorView" class="hidden space-y-4">
+                <!-- Doctor Console Top Bar -->
+                <div class="bg-gradient-to-r from-blue-950/80 to-slate-900 p-3.5 rounded-2xl border border-blue-800/40 flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <span class="text-xl">🩺</span>
+                    <div>
+                      <h4 class="font-bold text-sm text-white">Chamber #104 Doctor Workstation</h4>
+                      <p class="text-[11px] text-blue-300">Dr. Priya Sharma • OPD Live Control</p>
+                    </div>
+                  </div>
+                  <span class="text-[11px] font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live
+                  </span>
+                </div>
+
+                <!-- Active Patient Dossier inside Chamber -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 relative">
+                  <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+                    <span class="font-bold text-slate-300 uppercase text-[10px] tracking-wider">Active Patient In Chamber</span>
+                    <span id="docPatientHoldBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300">Turn 1 (Not skipped)</span>
+                  </div>
+
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span id="docActiveToken" class="text-2xl font-black font-mono text-emerald-400">#SQ-1042</span>
+                        <span id="docActiveArrived" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🟢 Arrived in Hall</span>
+                      </div>
+                      <h5 id="docActiveName" class="text-base font-bold text-white mt-1">Aarav Kumar</h5>
+                      <p id="docActiveMeta" class="text-xs text-slate-400 mt-0.5">42 yrs • Male • 📱 +91 98765 43210</p>
+                      <p id="docActiveProblem" class="text-xs text-slate-300 mt-2 bg-slate-950/70 p-2 rounded-xl border border-slate-800/80">
+                        🩺 <strong>Symptoms:</strong> Persistent high fever (3 days) & body ache
+                      </p>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <span class="text-[10px] text-slate-400 block">Session Time</span>
+                      <span id="docActiveTimer" class="font-mono text-base font-bold text-amber-400 block mt-0.5">04:12</span>
+                      <span class="text-[10px] text-slate-500 block">Avg: 6m</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Doctor Action Control Buttons -->
+                <div class="space-y-2">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <!-- Complete & Call Next -->
+                    <button type="button" onclick="doctorCallNext()" class="py-2.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-md shadow-emerald-900/30 cursor-pointer">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                      <span>Next Patient →</span>
+                    </button>
+
+                    <!-- Put on Hold (Shift 2 Slots) -->
+                    <button type="button" onclick="doctorHoldCurrentToken()" class="py-2.5 px-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 active:scale-95 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-md shadow-amber-950/40 border border-amber-400/30 cursor-pointer" title="Patient stepped out for X-Ray/Water/Sample. Moves token 2 positions back without cancelling.">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                      <span>⏳ Hold (+2 slots)</span>
+                    </button>
+
+                    <!-- Mark Absent -->
+                    <button type="button" onclick="doctorMarkAbsent()" class="py-2.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 active:scale-95 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer" title="Mark patient absent and remove to missed roster">
+                      <span>✕</span>
+                      <span>Mark Absent</span>
+                    </button>
+                  </div>
+
+                  <!-- Secondary Operations Row -->
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button type="button" onclick="doctorToggleDelay()" class="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer">
+                      <span>🚨 Ward Delay (+15m)</span>
+                    </button>
+
+                    <button type="button" onclick="doctorResetQueue()" class="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-400 hover:text-slate-200 text-[11px] font-medium transition-colors flex items-center justify-center gap-1 cursor-pointer">
+                      <span>🔄 Reset Demo</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Chamber Waiting Line Snapshot -->
+                <div class="bg-slate-900/60 p-3 rounded-2xl border border-slate-800/60">
+                  <div class="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-2">
+                    <span>Waiting Line Behind Current</span>
+                    <span id="docWaitingCount" class="font-mono text-emerald-400 font-bold">5 Waiting</span>
+                  </div>
+                  <div id="docWaitingList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                    <!-- Populated via JS -->
+                  </div>
+                </div>
+
+                <!-- Back to Patient View Button -->
+                <div class="pt-1 border-t border-slate-800/80">
+                  <button type="button" onclick="setKioskViewMode('patient')" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5">
+                    <span>📺 Back to Public Patient Screen</span>
+                  </button>
+                </div>
               </div>
 
             </div>
@@ -1974,6 +2124,7 @@
               <li><a href="mailto:smartqueue70@gmail.com" class="text-blue-600 font-bold hover:text-blue-800 flex items-center gap-1.5"><span>✉️</span> Support: smartqueue70@gmail.com</a></li>
               <li><a href="#" onclick="goToScreen(1); return false;" class="hover:text-slate-950">Book New Appointment</a></li>
               <li><a href="#" onclick="goToScreen(5); return false;" class="hover:text-slate-950">Live Queue & Active Tokens</a></li>
+              <li><a href="#doctor-console" onclick="openDoctorConsoleFromNav(); return false;" class="hover:text-slate-950 flex items-center gap-1.5 font-semibold text-slate-800"><span>👨‍⚕️</span> <span data-i18n="nav_doctor_console">Doctor Console</span></a></li>
               <li><a href="#" onclick="toggleMediChat(); return false;" class="hover:text-slate-950">AI Symptom Guidance</a></li>
               <li><a href="#faq-section" class="hover:text-slate-950">Patient FAQ & Support</a></li>
             </ul>
@@ -2564,6 +2715,7 @@
         nav_book_appt: "Book Appointment",
         nav_book_now: "Book Now",
         nav_live_queue: "Live Queue",
+        nav_doctor_console: "Doctor Console",
         nav_patient_prefix: "Patient",
         nav_guest: "Guest",
         step_home: "Home",
@@ -2715,6 +2867,7 @@
         nav_book_appt: "अपॉइंटमेंट बुक करें",
         nav_book_now: "अभी बुक करें",
         nav_live_queue: "लाइव कतार",
+        nav_doctor_console: "डॉक्टर कंसोल",
         nav_patient_prefix: "मरीज",
         nav_guest: "अतिथि",
         step_home: "होम",
@@ -2866,6 +3019,7 @@
         nav_book_appt: "முன்பதிவு செய்க",
         nav_book_now: "இப்போது முன்பதிவு செய்க",
         nav_live_queue: "நேரடி வரிசை",
+        nav_doctor_console: "மருத்துவர் கன்சோல்",
         nav_patient_prefix: "நோயாளி",
         nav_guest: "விருந்தினர்",
         step_home: "முகப்பு",
@@ -3017,6 +3171,7 @@
         nav_book_appt: "അപ്പോയിന്റ്മെന്റ് ബുക്ക് ചെയ്യുക",
         nav_book_now: "ഇപ്പോൾ ബുക്ക് ചെയ്യുക",
         nav_live_queue: "ലൈവ് ക്യൂ",
+        nav_doctor_console: "ഡോക്ടർ കൺസോൾ",
         nav_patient_prefix: "രോഗി",
         nav_guest: "അതിഥി",
         step_home: "ഹോം",
@@ -3587,24 +3742,494 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ── LANDING PAGE INTERACTIVE HELPERS ─────────────────────────
+    // ══════════════════════════════════════════════════════════════
+    //  LIVE QUEUE ENGINE & DOCTOR CHAMBER CONSOLE CONTROLLER
+    // ══════════════════════════════════════════════════════════════
+    let kioskCurrentMode = 'patient'; // 'patient' or 'doctor'
+    let currentLiveQueue = null;
+    let consultationTimerInterval = null;
+    let consultationSeconds = 4 * 60 + 12; // Initial demo seconds (04:12)
     let simCurrentToken = 1042;
-    function simNextToken() {
-      simCurrentToken++;
-      const el = document.getElementById('simCurrentTokenNum');
-      if (el) {
-        el.textContent = '#SQ-' + simCurrentToken;
-        el.classList.remove('token-pop-active');
-        // Force reflow so the animation restarts smoothly
-        void el.offsetWidth;
-        el.classList.add('token-pop-active');
+
+    // Web Audio API Synthesized Hospital Chimes (Instant & Self-Contained)
+    function playChime(type = 'call') {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const now = ctx.currentTime;
+        if (type === 'call') {
+          // Cheerful two-tone medical consultation call chime (D5 -> A5)
+          osc.frequency.setValueAtTime(587.33, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.16);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+          osc.start(now);
+          osc.stop(now + 0.65);
+        } else if (type === 'hold') {
+          // Caution buffer alert chime (A4 -> F4)
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.setValueAtTime(349.23, now + 0.14);
+          gain.gain.setValueAtTime(0.28, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+          osc.start(now);
+          osc.stop(now + 0.55);
+        } else if (type === 'alert') {
+          // Urgent triple ping
+          osc.frequency.setValueAtTime(783.99, now);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+          osc.start(now);
+          osc.stop(now + 0.7);
+        }
+      } catch (e) {}
+    }
+
+    function setKioskViewMode(mode) {
+      kioskCurrentMode = mode;
+      const patientView = document.getElementById('kioskPatientView');
+      const doctorView = document.getElementById('kioskDoctorView');
+      const tabPatient = document.getElementById('kioskTabPatient');
+      const tabDoctor = document.getElementById('kioskTabDoctor');
+
+      if (mode === 'doctor') {
+        if (patientView) patientView.classList.add('hidden');
+        if (doctorView) doctorView.classList.remove('hidden');
+        if (tabDoctor) {
+          tabDoctor.className = "px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold shadow-xs transition-all cursor-pointer flex items-center gap-1.5";
+        }
+        if (tabPatient) {
+          tabPatient.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer";
+        }
+      } else {
+        if (doctorView) doctorView.classList.add('hidden');
+        if (patientView) patientView.classList.remove('hidden');
+        if (tabPatient) {
+          tabPatient.className = "px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold shadow-xs transition-all cursor-pointer";
+        }
+        if (tabDoctor) {
+          tabDoctor.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-1.5";
+        }
       }
-      const next1 = document.getElementById('simNextTokenNum');
-      if (next1) next1.textContent = '#SQ-' + (simCurrentToken + 1);
-      const next2 = document.getElementById('simNextTokenNum2');
-      if (next2) next2.textContent = '#SQ-' + (simCurrentToken + 2);
-      const next3 = document.getElementById('simNextTokenNum3');
-      if (next3) next3.textContent = '#SQ-' + (simCurrentToken + 3);
+    }
+
+    function openDoctorConsoleFromNav() {
+      if (typeof toggleMobileMenu === 'function') {
+        toggleMobileMenu(false);
+      }
+      if (typeof goToScreen === 'function') {
+        goToScreen(0);
+      }
+      setKioskViewMode('doctor');
+      setTimeout(() => {
+        const target = document.getElementById('doctor-console') || document.getElementById('kioskContainer');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        const kiosk = document.getElementById('kioskContainer');
+        if (kiosk) {
+          kiosk.classList.add('ring-4', 'ring-emerald-400', 'ring-offset-4', 'ring-offset-slate-900');
+          setTimeout(() => {
+            kiosk.classList.remove('ring-4', 'ring-emerald-400', 'ring-offset-4', 'ring-offset-slate-900');
+          }, 2400);
+        }
+      }, 80);
+    }
+
+    function showSmsToast(recipient, message) {
+      const toast = document.getElementById('simulatedSmsToast');
+      const recEl = document.getElementById('smsToastRecipient');
+      const msgEl = document.getElementById('smsToastMessage');
+      const timeEl = document.getElementById('smsToastTimestamp');
+
+      if (recEl) recEl.textContent = recipient || "+91 98765 43210";
+      if (msgEl) msgEl.textContent = message || "";
+      if (timeEl) timeEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      if (toast) {
+        toast.classList.remove('hidden');
+        toast.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setTimeout(() => {
+          dismissSmsToast();
+        }, 12000);
+      }
+    }
+
+    function dismissSmsToast() {
+      const toast = document.getElementById('simulatedSmsToast');
+      if (toast) toast.classList.add('hidden');
+    }
+
+    function getLocalFallbackQueueState() {
+      return {
+        hospital: "MMG District Hospital",
+        chamber: "Chamber #104",
+        doctor: "Dr. Priya Sharma",
+        specialty: "General Medicine",
+        avgConsultationMins: 6,
+        delayMinutes: 0,
+        emergencyReason: "",
+        emergencyActive: false,
+        activeToken: {
+          tokenId: "SQ-1042",
+          patientName: "Aarav Kumar",
+          age: 42,
+          gender: "Male",
+          phone: "+91 98765 43210",
+          problem: "Persistent high fever (3 days) & body ache",
+          status: "IN_CHAMBER",
+          holdCount: 0,
+          elapsedMins: 4
+        },
+        waitingQueue: [
+          { tokenId: "SQ-1043", patientName: "Sunita Devi", age: 58, gender: "Female", phone: "+91 98111 22334", status: "WAITING", holdCount: 0, queuePosition: 1, estimatedWaitMins: 2, estimatedTime: "8:20 AM" },
+          { tokenId: "SQ-1044", patientName: "Rajesh Verma", age: 34, gender: "Male", phone: "+91 98222 33445", status: "WAITING", holdCount: 0, queuePosition: 2, estimatedWaitMins: 8, estimatedTime: "8:26 AM" },
+          { tokenId: "SQ-1045", patientName: "Pooja Sharma", age: 29, gender: "Female", phone: "+91 98333 44556", status: "WAITING", holdCount: 0, queuePosition: 3, estimatedWaitMins: 14, estimatedTime: "8:32 AM" },
+          { tokenId: "SQ-1046", patientName: "Mohammed Farhan", age: 51, gender: "Male", phone: "+91 98444 55667", status: "WAITING", holdCount: 0, queuePosition: 4, estimatedWaitMins: 20, estimatedTime: "8:38 AM" },
+          { tokenId: "SQ-1047", patientName: "Kavita Singh", age: 46, gender: "Female", phone: "+91 98555 66778", status: "WAITING", holdCount: 0, queuePosition: 5, estimatedWaitMins: 26, estimatedTime: "8:44 AM" }
+        ],
+        onHoldList: [],
+        totalWaiting: 5,
+        totalOnHold: 0
+      };
+    }
+
+    async function fetchLiveQueueState() {
+      try {
+        const res = await fetch('/api/queue/state');
+        if (res.ok) {
+          currentLiveQueue = await res.json();
+          renderQueueUI(currentLiveQueue);
+          return currentLiveQueue;
+        }
+      } catch (e) {}
+      if (!currentLiveQueue) {
+        currentLiveQueue = getLocalFallbackQueueState();
+      }
+      renderQueueUI(currentLiveQueue);
+      return currentLiveQueue;
+    }
+
+    function renderQueueUI(data) {
+      if (!data) return;
+
+      // 1. Emergency Delay Banner
+      const delayBanner = document.getElementById('kioskDelayBanner');
+      const delayMinsVal = document.getElementById('kioskDelayMinsVal');
+      const delayReasonVal = document.getElementById('kioskDelayReasonVal');
+      if (delayBanner) {
+        if (data.emergencyActive && data.delayMinutes > 0) {
+          delayBanner.classList.remove('hidden');
+          if (delayMinsVal) delayMinsVal.textContent = data.delayMinutes;
+          if (delayReasonVal) delayReasonVal.textContent = data.emergencyReason || "Emergency ward consultation in progress. Staggered arrivals active.";
+        } else {
+          delayBanner.classList.add('hidden');
+        }
+      }
+
+      // 2. Patient View - Serving Now
+      const servingToken = document.getElementById('kioskServingToken');
+      const servingPatient = document.getElementById('kioskServingPatient');
+      const servingElapsed = document.getElementById('kioskServingElapsed');
+      if (data.activeToken) {
+        if (servingToken) {
+          servingToken.textContent = '#' + data.activeToken.tokenId;
+          servingToken.classList.remove('token-pop-active');
+          void servingToken.offsetWidth;
+          servingToken.classList.add('token-pop-active');
+        }
+        if (servingPatient) {
+          servingPatient.innerHTML = `${data.activeToken.patientName} <span class="text-slate-500">•</span> ${data.activeToken.age}y ${data.activeToken.gender}`;
+        }
+        if (servingElapsed) {
+          servingElapsed.textContent = `${data.activeToken.elapsedMins || 4} mins`;
+        }
+      }
+
+      // 3. Patient View - On-Hold Buffer Section
+      const onHoldWrap = document.getElementById('kioskOnHoldWrap');
+      const onHoldList = document.getElementById('kioskOnHoldList');
+      if (onHoldWrap && onHoldList) {
+        if (data.onHoldList && data.onHoldList.length > 0) {
+          onHoldWrap.classList.remove('hidden');
+          onHoldList.innerHTML = data.onHoldList.map(item => `
+            <div class="flex items-center justify-between p-2 rounded-xl bg-amber-500/15 border border-amber-500/30 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="font-mono font-bold text-amber-300">#${item.tokenId}</span>
+                <span class="text-white font-medium">${item.patientName}</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200">Hold ${item.holdCount}/2</span>
+              </div>
+              <span class="text-[10px] font-semibold text-amber-300">Buffer ~12m</span>
+            </div>
+          `).join('');
+        } else {
+          onHoldWrap.classList.add('hidden');
+          onHoldList.innerHTML = '';
+        }
+      }
+
+      // 4. Patient View - Up Next Pipeline
+      const upNextList = document.getElementById('kioskUpNextList');
+      if (upNextList && data.waitingQueue) {
+        upNextList.innerHTML = data.waitingQueue.slice(0, 4).map((p, idx) => {
+          const isHold = p.status === 'ON_HOLD';
+          const isFirst = idx === 0;
+          return `
+            <div class="flex items-center justify-between ${isHold ? 'bg-amber-950/40 border-amber-600/40' : (isFirst ? 'bg-slate-900/80 border-slate-700/80' : 'bg-slate-900/40 border-slate-800/40')} px-3.5 py-2 rounded-xl border text-xs transition-colors">
+              <div class="flex items-center gap-2 font-mono">
+                <span class="${isFirst ? 'text-amber-400 font-bold' : 'text-slate-500'}">${idx + 1}.</span>
+                <span class="font-bold ${isHold ? 'text-amber-300' : 'text-white'}">#${p.tokenId}</span>
+                <span class="text-[11px] font-sans ${isHold ? 'text-amber-200 font-medium' : 'text-slate-300'}">${p.patientName}</span>
+                ${isHold ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-200 font-bold">Shifted 2 Slots</span>` : ''}
+              </div>
+              <span class="${isFirst ? 'font-semibold text-amber-400' : 'text-slate-400'} font-mono">~${p.estimatedWaitMins || (idx + 1) * 6} mins</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 5. Doctor Console View Data
+      const docActiveToken = document.getElementById('docActiveToken');
+      const docActiveName = document.getElementById('docActiveName');
+      const docActiveMeta = document.getElementById('docActiveMeta');
+      const docActiveProblem = document.getElementById('docActiveProblem');
+      const docHoldBadge = document.getElementById('docPatientHoldBadge');
+      const docWaitingCount = document.getElementById('docWaitingCount');
+      const docWaitingList = document.getElementById('docWaitingList');
+
+      if (data.activeToken) {
+        if (docActiveToken) docActiveToken.textContent = '#' + data.activeToken.tokenId;
+        if (docActiveName) docActiveName.textContent = data.activeToken.patientName;
+        if (docActiveMeta) docActiveMeta.textContent = `${data.activeToken.age} yrs • ${data.activeToken.gender} • 📱 ${data.activeToken.phone || 'N/A'}`;
+        if (docActiveProblem) {
+          docActiveProblem.innerHTML = `🩺 <strong>Chief Complaint:</strong> ${data.activeToken.problem || 'General OPD Consultation'}`;
+        }
+        if (docHoldBadge) {
+          const holds = data.activeToken.holdCount || 0;
+          docHoldBadge.textContent = holds > 0 ? `⚠️ Hold ${holds}/2 (Shifted Buffer)` : 'Turn 1 (Regular Turn)';
+          docHoldBadge.className = holds > 0
+            ? 'text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30'
+            : 'text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300';
+        }
+      }
+
+      if (docWaitingCount) {
+        docWaitingCount.textContent = `${data.waitingQueue ? data.waitingQueue.length : 0} Waiting`;
+      }
+
+      if (docWaitingList && data.waitingQueue) {
+        docWaitingList.innerHTML = data.waitingQueue.map((item, i) => `
+          <div class="flex items-center justify-between text-[11px] p-1.5 rounded-lg bg-slate-950/60 border border-slate-800/80">
+            <span class="font-mono text-slate-300"><strong class="text-white">${i + 1}.</strong> #${item.tokenId} - ${item.patientName}</span>
+            <span class="text-slate-400 font-mono">${item.status === 'ON_HOLD' ? '⏸️ ON HOLD' : `~${item.estimatedWaitMins || (i + 1) * 6}m`}</span>
+          </div>
+        `).join('');
+      }
+
+      // Also refresh appointments if Screen 5 is currently open
+      if (document.getElementById('screen5')?.classList.contains('visible')) {
+        renderAppointments(false);
+      }
+    }
+
+    function startConsultationTimer() {
+      if (consultationTimerInterval) clearInterval(consultationTimerInterval);
+      consultationTimerInterval = setInterval(() => {
+        consultationSeconds++;
+        const m = Math.floor(consultationSeconds / 60).toString().padStart(2, '0');
+        const s = (consultationSeconds % 60).toString().padStart(2, '0');
+        const timerEl = document.getElementById('docActiveTimer');
+        if (timerEl) timerEl.textContent = `${m}:${s}`;
+      }, 1000);
+    }
+    startConsultationTimer();
+
+    // ── DOCTOR CONSOLE ACTIONS ────────────────────────────────────
+    async function doctorCallNext() {
+      playChime('call');
+      try {
+        const res = await fetch('/api/queue/next-token', { method: 'POST' });
+        if (res.ok) {
+          const result = await res.json();
+          currentLiveQueue = result.state;
+          consultationSeconds = 0;
+          renderQueueUI(currentLiveQueue);
+          return;
+        }
+      } catch (e) {}
+
+      if (!currentLiveQueue) currentLiveQueue = getLocalFallbackQueueState();
+      if (currentLiveQueue.waitingQueue.length > 0) {
+        currentLiveQueue.activeToken = currentLiveQueue.waitingQueue.shift();
+        currentLiveQueue.activeToken.status = "IN_CHAMBER";
+        currentLiveQueue.activeToken.consultationStartedAt = Date.now();
+      }
+      consultationSeconds = 0;
+      renderQueueUI(currentLiveQueue);
+    }
+
+    async function doctorHoldCurrentToken(customReason) {
+      playChime('hold');
+      const reason = customReason || "Patient stepped out for X-Ray / Lab tests / Water";
+
+      try {
+        const res = await fetch('/api/queue/hold-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason })
+        });
+        if (res.ok) {
+          const result = await res.json();
+          currentLiveQueue = result.state;
+          consultationSeconds = 0;
+          renderQueueUI(currentLiveQueue);
+
+          if (result.simulatedSMS) {
+            showSmsToast(result.simulatedSMS.to, result.simulatedSMS.message);
+          }
+          return;
+        }
+      } catch (e) {}
+
+      if (!currentLiveQueue) currentLiveQueue = getLocalFallbackQueueState();
+      const curr = currentLiveQueue.activeToken;
+      if (curr) {
+        curr.holdCount = (curr.holdCount || 0) + 1;
+        curr.status = "ON_HOLD";
+        curr.holdReason = reason;
+        const targetIdx = Math.min(2, currentLiveQueue.waitingQueue.length);
+        currentLiveQueue.waitingQueue.splice(targetIdx, 0, curr);
+        if (!currentLiveQueue.onHoldList) currentLiveQueue.onHoldList = [];
+        currentLiveQueue.onHoldList.push(curr);
+
+        if (currentLiveQueue.waitingQueue.length > 0) {
+          currentLiveQueue.activeToken = currentLiveQueue.waitingQueue.shift();
+          currentLiveQueue.activeToken.status = "IN_CHAMBER";
+        }
+        consultationSeconds = 0;
+        renderQueueUI(currentLiveQueue);
+
+        const smsText = `SmartQueue Alert: Token ${curr.tokenId} was called at Chamber 104 but you were not present. Your token is PAUSED and shifted 2 positions back (~12m buffer). Return outside Chamber 104 immediately.`;
+        showSmsToast(curr.phone, smsText);
+      }
+    }
+
+    async function doctorMarkAbsent() {
+      playChime('alert');
+      try {
+        const res = await fetch('/api/queue/mark-absent', { method: 'POST' });
+        if (res.ok) {
+          const result = await res.json();
+          currentLiveQueue = result.state;
+          consultationSeconds = 0;
+          renderQueueUI(currentLiveQueue);
+          return;
+        }
+      } catch (e) {}
+
+      if (!currentLiveQueue) currentLiveQueue = getLocalFallbackQueueState();
+      const curr = currentLiveQueue.activeToken;
+      if (curr) {
+        curr.status = "ABSENT";
+        if (!currentLiveQueue.missedList) currentLiveQueue.missedList = [];
+        currentLiveQueue.missedList.unshift(curr);
+        if (currentLiveQueue.waitingQueue.length > 0) {
+          currentLiveQueue.activeToken = currentLiveQueue.waitingQueue.shift();
+          currentLiveQueue.activeToken.status = "IN_CHAMBER";
+          currentLiveQueue.activeToken.consultationStartedAt = Date.now();
+        } else {
+          currentLiveQueue.activeToken = null;
+        }
+      }
+      consultationSeconds = 0;
+      renderQueueUI(currentLiveQueue);
+    }
+
+    async function doctorToggleDelay(forceMins) {
+      playChime('alert');
+      let newDelay = 15;
+      let active = true;
+
+      if (currentLiveQueue && currentLiveQueue.emergencyActive) {
+        newDelay = 0;
+        active = false;
+      }
+      if (typeof forceMins === 'number') {
+        newDelay = forceMins;
+        active = forceMins > 0;
+      }
+
+      try {
+        const res = await fetch('/api/queue/delay-override', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            delayMinutes: newDelay,
+            reason: "Doctor attending emergency patient in Trauma Ward",
+            active
+          })
+        });
+        if (res.ok) {
+          const result = await res.json();
+          currentLiveQueue = result.state;
+          renderQueueUI(currentLiveQueue);
+          if (active) {
+            showSmsToast("+91 All Patients", `SmartQueue MMG Hospital: Chamber #104 announced a +${newDelay}m delay due to an emergency trauma case. Please do not crowd the corridor; arrive according to your newly updated appointment time.`);
+          }
+          return;
+        }
+      } catch (e) {}
+
+      if (!currentLiveQueue) currentLiveQueue = getLocalFallbackQueueState();
+      currentLiveQueue.emergencyActive = active;
+      currentLiveQueue.delayMinutes = newDelay;
+      currentLiveQueue.emergencyReason = active ? "Doctor attending emergency patient in Trauma Ward" : "";
+      renderQueueUI(currentLiveQueue);
+      if (active) {
+        showSmsToast("+91 All Patients", `SmartQueue MMG Hospital: Chamber #104 announced a +${newDelay}m delay due to an emergency trauma case.`);
+      }
+    }
+
+    async function doctorResetQueue() {
+      try {
+        const res = await fetch('/api/queue/reset', { method: 'POST' });
+        if (res.ok) {
+          const result = await res.json();
+          currentLiveQueue = result.state;
+          consultationSeconds = 4 * 60 + 12;
+          renderQueueUI(currentLiveQueue);
+          dismissSmsToast();
+          return;
+        }
+      } catch (e) {}
+      currentLiveQueue = getLocalFallbackQueueState();
+      consultationSeconds = 4 * 60 + 12;
+      renderQueueUI(currentLiveQueue);
+      dismissSmsToast();
+    }
+
+    function patientReportReturned(bookingId) {
+      playChime('call');
+      alert(`✅ Verified: Checked in outside Chamber #104 for token ${bookingId}. The doctor has been notified you are outside.`);
+      if (currentLiveQueue && currentLiveQueue.onHoldList) {
+        const found = currentLiveQueue.onHoldList.find(t => t.tokenId === bookingId);
+        if (found) {
+          found.status = "WAITING";
+          found.returnedOutside = true;
+        }
+      }
+      renderQueueUI(currentLiveQueue);
+    }
+
+    function simNextToken() {
+      doctorCallNext();
     }
 
     function bookWithHospital(hospId) {
@@ -4174,9 +4799,51 @@
       list.innerHTML = state.appointments.map(a => {
         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.hospital.name + ', ' + a.hospital.loc)}`;
         const localizedSpec = specMap[a.doctor.spec] || a.doctor.spec;
+
+        // Dynamic status check from Live Queue Engine
+        let liveStatusBadge = `<span class="text-xs font-bold text-emerald-600">${t('ticket_expected', 'Expected on-time')}</span>`;
+        let alertBanner = '';
+
+        if (currentLiveQueue) {
+          const isActive = currentLiveQueue.activeToken && (currentLiveQueue.activeToken.tokenId === a.bookingId || a.bookingId === 'SQ-1042');
+          const isOnHold = currentLiveQueue.onHoldList && currentLiveQueue.onHoldList.some(h => h.tokenId === a.bookingId);
+          const waitIdx = currentLiveQueue.waitingQueue ? currentLiveQueue.waitingQueue.findIndex(w => w.tokenId === a.bookingId) : -1;
+
+          if (isActive) {
+            liveStatusBadge = `<span class="text-xs font-bold text-emerald-600 animate-pulse">🟢 NOW SERVING IN CHAMBER</span>`;
+            alertBanner = `
+              <div class="mt-3 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-ping"></span>
+                <span class="font-bold">🎉 NOW YOUR TURN! Please enter Chamber #104 immediately.</span>
+              </div>
+            `;
+          } else if (isOnHold) {
+            liveStatusBadge = `<span class="text-xs font-bold text-amber-600 animate-pulse">⏸️ ON BUFFER HOLD</span>`;
+            alertBanner = `
+              <div class="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <span class="font-bold flex items-center gap-1.5 text-amber-800">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                    ⏸️ YOUR TURN IS CURRENTLY ON BUFFER HOLD
+                  </span>
+                  <p class="text-[11px] text-amber-700 mt-0.5">
+                    You were called at Chamber #104 but were not outside. Your token was shifted 2 positions back (~12m buffer).
+                  </p>
+                </div>
+                <button type="button" onclick="patientReportReturned('${a.bookingId}')" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs">
+                  🟢 I'm Outside Chamber #104
+                </button>
+              </div>
+            `;
+          } else if (waitIdx !== -1) {
+            const waitItem = currentLiveQueue.waitingQueue[waitIdx];
+            liveStatusBadge = `<span class="text-xs font-bold text-blue-600">Position #${waitIdx + 1} (~${waitItem.estimatedWaitMins || (waitIdx + 1) * 6}m)</span>`;
+          }
+        }
+
         return `
           <div class="bg-white rounded-2xl p-5 sm:p-6 border border-[#E4E7EC] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
+            <div class="flex-1">
               <div class="flex items-center gap-2 mb-2">
                 <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">${t('ticket_token_no', 'Token')}: ${a.bookingId}</span>
                 <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 flex items-center gap-1">
@@ -4200,10 +4867,11 @@
                   <span>🗑️ ${t('ticket_cancel', 'Cancel Ticket')}</span>
                 </button>
               </div>
+              ${alertBanner}
             </div>
-            <div class="sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+            <div class="sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 shrink-0">
               <span class="text-[11px] text-slate-400 block">${t('ticket_status', 'Queue Status')}</span>
-              <span class="text-xs font-bold text-emerald-600">${t('ticket_expected', 'Expected on-time')}</span>
+              ${liveStatusBadge}
               <span class="text-[11px] text-slate-400 block mt-2">${t('ticket_booked_for', 'Booked for')}</span>
               <span class="text-xs font-semibold text-slate-700">${a.patient.fname} ${a.patient.lname}</span>
             </div>
@@ -4939,6 +5607,7 @@ Be concise, warm and helpful. Support Hindi or English.`;
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      fetchLiveQueueState();
       checkSupabaseSession();
       if (window.smartQueueAuth && window.smartQueueAuth.client) {
         window.smartQueueAuth.client.auth.onAuthStateChange((event, session) => {

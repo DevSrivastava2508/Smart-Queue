@@ -1,19 +1,14 @@
 {
-  "cleanUrls": true,
-  "headers": [
-    {
-      "source": "/sw.js",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Service-Worker-Allowed", "value": "/" }
-      ]
-    },
-    {
-      "source": "/manifest.json",
-      "headers": [
-        { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
-      ]
-    }
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/queue/state", "destination": "/api/queue/state.js" },
+    { "source": "/api/queue/hold-token", "destination": "/api/queue/hold-token.js" },
+    { "source": "/api/queue/next-token", "destination": "/api/queue/next-token.js" },
+    { "source": "/api/queue/delay-override", "destination": "/api/queue/delay-override.js" },
+    { "source": "/api/queue/mark-absent", "destination": "/api/queue/mark-absent.js" },
+    { "source": "/api/queue/reset", "destination": "/api/queue/reset.js" },
+    { "source": "/api/chat", "destination": "/api/chat.js" },
+    { "source": "/api/send-confirmation", "destination": "/api/send-confirmation.js" },
+    { "source": "/api/health", "destination": "/api/health.js" }
   ]
 }
