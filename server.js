@@ -494,6 +494,31 @@ async function sendAppointmentSms(details = {}) {
 			}
 		}
 	} catch (err) {
+		const isTemplateErr = err.message && (err.message.includes("template") || err.message.includes("Trial") || err.code === 21620);
+		if (isTemplateErr && body !== "sms_appointment_reminders") {
+			console.log(`[SmartQueue Twilio] 🔄 Trial account detected. Retrying with approved template: "sms_appointment_reminders"...`);
+			try {
+				const client = getTwilioClient();
+				if (client) {
+					const retryMsg = await client.messages.create({
+						body: "sms_appointment_reminders",
+						from: fromNumber,
+						to: targetPhone
+					});
+					console.log(`[SmartQueue Twilio] 📱 Template SMS dispatched successfully! SID: ${retryMsg.sid} to ${targetPhone}`);
+					return {
+						success: true,
+						sid: retryMsg.sid,
+						to: targetPhone,
+						from: fromNumber,
+						body: "sms_appointment_reminders",
+						status: retryMsg.status
+					};
+				}
+			} catch (retryErr) {
+				console.error(`[SmartQueue Twilio] ❌ Trial template retry failed:`, retryErr.message);
+			}
+		}
 		console.error(`[SmartQueue Twilio] ❌ Failed to dispatch SMS via Twilio:`, err.message);
 		return {
 			success: false,
