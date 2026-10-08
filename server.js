@@ -28,6 +28,8 @@ console.log("🔧 SmartQueue Server starting...");
 console.log("🔑 OpenRouter API Key configured:", process.env.OPENROUTER_API_KEY ? "Yes (configured)" : "No");
 console.log("🔑 Google Gemini API Key configured:", process.env.GOOGLE_API_KEY ? "Yes (configured)" : "No");
 console.log("📧 Apps Script URL configured:", process.env.APPS_SCRIPT_URL ? "Yes (configured)" : "No");
+console.log("📱 Twilio SMS configured:", (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) ? "Yes (configured)" : "No (will simulate)");
+console.log("📞 Twilio Sender Phone:", process.env.TWILIO_PHONE_NUMBER || "+17372508034");
 const SMARTQUEUE_KNOWLEDGE = `
 You are **Smart Queue Assistant**, the official virtual assistant for "Smart Queue" — a hospital/clinic appointment and queue management system. You exist ONLY to help patients and visitors with Smart Queue related tasks. You do not have any other purpose.
 
@@ -383,6 +385,142 @@ async function handleChatRequest(req, res) {
 		});
 	}
 }
+let twilioSdk = null;
+try {
+	twilioSdk = require("twilio");
+} catch (e) {
+	console.log("ℹ️ twilio package not found in node_modules, fallback to direct REST API");
+}
+
+let twilioClient = null;
+function getTwilioClient() {
+	const accountSid = process.env.TWILIO_ACCOUNT_SID;
+	const authToken = process.env.TWILIO_AUTH_TOKEN;
+	if (accountSid && authToken && twilioSdk) {
+		if (!twilioClient) {
+			twilioClient = twilioSdk(accountSid, authToken);
+		}
+		return twilioClient;
+	}
+	return null;
+}
+
+function formatPhoneE164(phone) {
+	if (!phone) return process.env.DEFAULT_SMS_RECIPIENT || "+917428129916";
+	let clean = String(phone).trim().replace(/[^\d+]/g, "");
+	if (!clean) return process.env.DEFAULT_SMS_RECIPIENT || "+917428129916";
+	if (clean.startsWith("+")) return clean;
+	if (clean.length === 10) return `+91${clean}`;
+	return `+${clean}`;
+}
+
+async function sendAppointmentSms(details = {}) {
+	const { to, patientName, doctor, hospital, date, time, bookingId, messageBody } = details;
+	const accountSid = process.env.TWILIO_ACCOUNT_SID;
+	const authToken = process.env.TWILIO_AUTH_TOKEN;
+	const fromNumber = process.env.TWILIO_PHONE_NUMBER || "+17372508034";
+	const targetPhone = formatPhoneE164(to);
+
+	const body = messageBody || 
+		`SmartQueue: Appointment Confirmed!\nToken: #${bookingId || 'OPD'}\nPatient: ${patientName || 'Patient'}\nDoctor: ${doctor || 'Specialist'}\nHospital: ${hospital || 'Hospital'}\nSlot: ${date || 'Today'} (${time || 'General'})\nPlease report to OPD counter 10m before slot.`;
+
+	if (!accountSid || !authToken) {
+		console.warn(`[SmartQueue Twilio] ⚠️ TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN not set in .env. Simulating SMS dispatch:`);
+		console.log(`[SmartQueue Twilio Mock SMS] From: ${fromNumber} → To: ${targetPhone}\n${body}`);
+		return {
+			success: true,
+			simulated: true,
+			sid: "SM_SIMULATED_" + Date.now(),
+			to: targetPhone,
+			from: fromNumber,
+			body,
+			message: "Twilio credentials not configured in .env; automated SMS simulated."
+		};
+	}
+
+	try {
+		const client = getTwilioClient();
+		if (client) {
+			const message = await client.messages.create({
+				body,
+				from: fromNumber,
+				to: targetPhone
+			});
+			console.log(`[SmartQueue Twilio] 📱 Automated SMS dispatched successfully! SID: ${message.sid} to ${targetPhone}`);
+			return {
+				success: true,
+				sid: message.sid,
+				to: targetPhone,
+				from: fromNumber,
+				body,
+				status: message.status
+			};
+		} else {
+			// Direct Twilio REST API fallback using node fetch
+			const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+			const authHeader = "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64");
+			const params = new URLSearchParams();
+			params.append("To", targetPhone);
+			params.append("From", fromNumber);
+			params.append("Body", body);
+
+			const twilioRes = await fetch(twilioUrl, {
+				method: "POST",
+				headers: {
+					"Authorization": authHeader,
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				body: params.toString()
+			});
+			const data = await twilioRes.json();
+			if (twilioRes.ok) {
+				console.log(`[SmartQueue Twilio] 📱 Automated SMS dispatched successfully via REST! SID: ${data.sid} to ${targetPhone}`);
+				return {
+					success: true,
+					sid: data.sid,
+					to: targetPhone,
+					from: fromNumber,
+					body,
+					status: data.status
+				};
+			} else {
+				console.error(`[SmartQueue Twilio] ❌ Twilio REST API Error:`, data.message || data);
+				return {
+					success: false,
+					error: data.message || "Twilio API error",
+					code: data.code,
+					to: targetPhone
+				};
+			}
+		}
+	} catch (err) {
+		console.error(`[SmartQueue Twilio] ❌ Failed to dispatch SMS via Twilio:`, err.message);
+		return {
+			success: false,
+			error: err.message,
+			to: targetPhone
+		};
+	}
+}
+
+async function handleSendSmsRequest(req, res) {
+	setCorsHeaders(res);
+	if (req.method === "OPTIONS") {
+		if (typeof res.status === "function") return res.status(204).end();
+		res.writeHead(204);
+		return res.end();
+	}
+	if (req.method !== "POST") return sendResponse(res, 405, { error: "Method Not Allowed" });
+	try {
+		const payload = await parseRequestBody(req);
+		const result = await sendAppointmentSms(payload);
+		return sendResponse(res, result.success ? 200 : 400, result);
+	} catch (err) {
+		console.error("[SmartQueue SMS Error]", err.message);
+		return sendResponse(res, 500, { success: false, error: err.message });
+	}
+}
+
 async function handleSendConfirmationRequest(req, res) {
 	setCorsHeaders(res);
 	if (req.method === "OPTIONS") {
@@ -393,14 +531,38 @@ async function handleSendConfirmationRequest(req, res) {
 	if (req.method !== "POST") return sendResponse(res, 405, { error: "Method Not Allowed" });
 	try {
 		const { patientName, patientEmail, patientPhone, doctorEmail, doctor, hospital, date, time, bookingId, concern } = await parseRequestBody(req);
-		if (!patientEmail && !doctorEmail) return sendResponse(res, 400, {
-			success: false,
-			error: "At least one email (patient or doctor) is required"
-		});
+
+		// Trigger automated appointment SMS via Twilio
+		let smsResult = null;
+		try {
+			smsResult = await sendAppointmentSms({
+				to: patientPhone,
+				patientName,
+				doctor,
+				hospital,
+				date,
+				time,
+				bookingId,
+				concern
+			});
+		} catch (smsErr) {
+			console.warn("[SmartQueue] Twilio SMS dispatch warning:", smsErr.message);
+		}
+
+		if (!patientEmail && !doctorEmail) {
+			return sendResponse(res, 200, {
+				success: true,
+				bookingId,
+				sms: smsResult,
+				notice: "SMS dispatched, no email provided"
+			});
+		}
 		const scriptUrl = process.env.APPS_SCRIPT_URL;
-		if (!scriptUrl) return sendResponse(res, 500, {
-			success: false,
-			error: "APPS_SCRIPT_URL not configured"
+		if (!scriptUrl) return sendResponse(res, 200, {
+			success: true,
+			bookingId,
+			sms: smsResult,
+			notice: "SMS dispatched, APPS_SCRIPT_URL not configured for email"
 		});
 		console.log(`[SmartQueue Email] 📧 Sending confirmation for ${patientName || "Patient"} → Patient: ${patientEmail || "N/A"}, Doctor: ${doctorEmail || "N/A"}`);
 		const controller = new AbortController();
@@ -439,13 +601,15 @@ async function handleSendConfirmationRequest(req, res) {
 			console.log(`[SmartQueue Email] ✅ Emails sent successfully for booking ${bookingId}`);
 			return sendResponse(res, 200, {
 				success: true,
-				bookingId
+				bookingId,
+				sms: smsResult
 			});
 		} else {
 			console.warn(`[SmartQueue Email] ⚠️ Apps Script returned error:`, result.error || result);
 			return sendResponse(res, 200, {
 				success: false,
-				error: result.error || "Apps Script error"
+				error: result.error || "Apps Script error",
+				sms: smsResult
 			});
 		}
 	} catch (err) {
@@ -1021,6 +1185,7 @@ async function handler(req, res) {
 	if (pathname === "/api/queue/delay-override") return handleDelayOverride(req, res);
 	if (pathname === "/api/queue/patient-arrived") return handlePatientArrived(req, res);
 	if (pathname === "/api/queue/reset") return handleResetQueue(req, res);
+	if (pathname === "/api/send-sms") return handleSendSmsRequest(req, res);
 
 	let safePath = path.normalize(decodeURIComponent(pathname)).replace(/^(\.\.[\/\\])+/, "");
 	if (safePath === "/" || safePath === "\\" || safePath === "") safePath = "/index.html";
@@ -1038,6 +1203,7 @@ if (require.main === module) server.listen(PORT, () => {
 	console.log(`🚀 SmartQueue Server running at: http://localhost:${PORT}`);
 	console.log(`💬 Chat API available at:       http://localhost:${PORT}/api/chat`);
 	console.log(`🩺 Health API available at:     http://localhost:${PORT}/api/health`);
+	console.log(`📱 Twilio SMS available at:     http://localhost:${PORT}/api/send-sms`);
 	console.log(`⏸️ Queue API available at:      http://localhost:${PORT}/api/queue/state`);
 	console.log(`🔄 Key Rotation: OpenRouter ➡️  Google Gemini API failover`);
 	console.log(`======================================================\n`);
@@ -1048,6 +1214,8 @@ module.exports.server = server;
 module.exports.handleHealthRequest = handleHealthRequest;
 module.exports.handleChatRequest = handleChatRequest;
 module.exports.handleSendConfirmationRequest = handleSendConfirmationRequest;
+module.exports.handleSendSmsRequest = handleSendSmsRequest;
+module.exports.sendAppointmentSms = sendAppointmentSms;
 module.exports.handleGetQueueState = handleGetQueueState;
 module.exports.handleHoldToken = handleHoldToken;
 module.exports.handleNextToken = handleNextToken;

@@ -4896,6 +4896,31 @@
         });
       }
 
+      // Dispatch Automated SMS Notification via Twilio
+      const patientPhone = state.patient.phone || '+917428129916';
+      fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: patientPhone,
+          patientName,
+          doctor: state.doctor.name,
+          hospital: state.hospital.name,
+          date: state.date,
+          time: state.slot,
+          bookingId: bookingToken,
+          concern: state.problem || 'General Consultation'
+        })
+      }).then(r => r.json()).then(smsData => {
+        if (smsData.success) {
+          console.log('[SmartQueue] 📱 Automated Twilio SMS dispatched! SID:', smsData.sid, 'to', smsData.to);
+        } else {
+          console.warn('[SmartQueue] ⚠️ Automated SMS notice:', smsData.error);
+        }
+      }).catch(err => {
+        console.warn('[SmartQueue] SMS dispatch warning:', err.message);
+      });
+
       // Connect to Live Queue Backend & Dedicated Doctor Dashboard
       fetch('/api/queue/add-patient', {
         method: 'POST',

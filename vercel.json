@@ -13,6 +13,7 @@
     { "source": "/api/queue/reset", "destination": "/api/queue/reset.js" },
     { "source": "/api/chat", "destination": "/api/chat.js" },
     { "source": "/api/send-confirmation", "destination": "/api/send-confirmation.js" },
+    { "source": "/api/send-sms", "destination": "/api/send-sms.js" },
     { "source": "/api/health", "destination": "/api/health.js" }
   ]
 }

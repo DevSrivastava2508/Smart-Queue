@@ -16,5 +16,8 @@
     "queue-management"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "twilio": "^6.1.2"
+  }
 }
