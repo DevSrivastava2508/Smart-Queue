@@ -991,7 +991,7 @@
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span data-i18n="nav_live_queue">Live Queue</span>
           </a>
-          <a href="/doctor" onclick="if(!event.metaKey && !event.ctrlKey){ openDoctorConsoleFromNav(event); return false; }" class="hover:text-slate-950 transition-colors inline-flex items-center gap-1.5 text-slate-700 font-bold group" title="Doctor Console (Chamber 104) — click to scroll or Cmd/Ctrl+click to open /doctor">
+          <a href="/doctor" class="hover:text-slate-950 transition-colors inline-flex items-center gap-1.5 text-slate-700 font-bold group" title="Open Dedicated Doctor Console (Chamber 104)">
             <span class="text-xs">👨‍⚕️</span>
             <span data-i18n="nav_doctor_console">Doctor Console</span>
             <span class="hidden xl:inline-block text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">/doctor ↗</span>
@@ -1047,7 +1047,6 @@
         <div class="flex flex-col space-y-1.5 text-sm font-semibold text-slate-700">
           <a href="#doctors-section" onclick="toggleMobileMenu(false)" data-i18n="nav_specialists" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Specialists</a>
           <a href="#hospitals-section" onclick="toggleMobileMenu(false)" data-i18n="nav_hospitals" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">Hospitals</a>
-          <a href="#how-it-works" onclick="toggleMobileMenu(false)" data-i18n="nav_how_it_works" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">How It Works</a>
           <a href="#" onclick="goToScreen(5); toggleMobileMenu(false); return false;" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-between text-slate-900 font-bold">
             <span class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -1055,19 +1054,12 @@
             </span>
             <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold uppercase">OPD</span>
           </a>
-          <a href="#doctor-console" onclick="openDoctorConsoleFromNav(); toggleMobileMenu(false); return false;" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-between text-slate-900 font-bold">
+          <a href="/doctor" onclick="toggleMobileMenu(false)" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-between text-slate-900 font-bold">
             <span class="flex items-center gap-2">
               <span>👨‍⚕️</span>
               <span data-i18n="nav_doctor_console">Doctor Console</span>
             </span>
-            <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold uppercase">Chamber 104</span>
-          </a>
-          <a href="/doctor" target="_blank" onclick="toggleMobileMenu(false)" class="px-3 py-2 rounded-lg bg-blue-50/80 hover:bg-blue-100 text-blue-900 transition-colors flex items-center justify-between text-xs font-bold border border-blue-200/80">
-            <span class="flex items-center gap-2">
-              <span>🚀</span>
-              <span>Open Dedicated Doctor App</span>
-            </span>
-            <span class="font-mono text-[10px] text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">/doctor ↗</span>
+            <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold font-mono">/doctor ↗</span>
           </a>
           <a href="#faq-section" onclick="toggleMobileMenu(false)" data-i18n="nav_faq" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">FAQ</a>
         </div>
@@ -1193,21 +1185,17 @@
               <!-- Subtle card background glow -->
               <div class="absolute top-0 right-0 w-48 h-48 bg-blue-600/20 rounded-full filter blur-3xl pointer-events-none"></div>
 
-              <!-- Top Bar of Kiosk Display: Location & Mode Switcher -->
-              <div class="flex flex-wrap items-center justify-between pb-3.5 border-b border-slate-800/80 mb-4 gap-2 text-xs">
+              <!-- Top Bar of Kiosk Display: Location & Status -->
+              <div class="flex items-center justify-between pb-3.5 border-b border-slate-800/80 mb-4 gap-2 text-xs">
                 <div class="flex items-center gap-2 min-w-0">
                   <span class="radar-beacon w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
                   <span class="font-bold tracking-wide text-slate-200 uppercase text-[11px] truncate">MMG District Hospital • OPD Wing 2</span>
                 </div>
-                <!-- Interactive Mode Toggle -->
-                <div class="inline-flex p-0.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-[11px] font-semibold shrink-0">
-                  <button type="button" id="kioskTabPatient" onclick="setKioskViewMode('patient')" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white shadow-xs transition-all cursor-pointer">
-                    📺 Patient View
-                  </button>
-                  <button type="button" id="kioskTabDoctor" onclick="setKioskViewMode('doctor')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-1.5">
-                    <span>👨‍⚕️ Doctor Console</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  </button>
+                    <span>OPD Counter Live</span>
+                  </span>
                 </div>
               </div>
 
@@ -1301,118 +1289,21 @@
                 </div>
 
                 <!-- Patient View Bottom Actions -->
-                <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80">
-                  <button type="button" onclick="setKioskViewMode('doctor')" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
-                    <span>👨‍⚕️ Chamber Workstation</span>
+                <div class="pt-3 border-t border-slate-800/80 space-y-2.5">
+                  <button type="button" onclick="goToScreen(1)" class="btn-shine-sweep w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                    <span>Book Appointment &amp; Get Token</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                   </button>
-                  <a href="/doctor" target="_blank" class="py-2.5 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer" title="Open Dedicated Doctor Console (/doctor)">
-                    <span>/doctor ↗</span>
-                  </a>
-                  <button type="button" onclick="goToScreen(1)" class="btn-shine-sweep flex-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
-                    <span>Get My Token</span>
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- VIEW 2: DOCTOR CHAMBER WORKSTATION CONSOLE -->
-              <div id="kioskDoctorView" class="hidden space-y-4">
-                <!-- Doctor Console Top Bar -->
-                <div class="bg-gradient-to-r from-blue-950/80 to-slate-900 p-3.5 rounded-2xl border border-blue-800/40 flex items-center justify-between">
-                  <div class="flex items-center gap-2.5">
-                    <span class="text-xl">🩺</span>
-                    <div>
-                      <h4 class="font-bold text-sm text-white">Chamber #104 Doctor Workstation</h4>
-                      <p class="text-[11px] text-blue-300">Dr. Priya Sharma • OPD Live Control</p>
-                    </div>
+                  <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+                    <span class="flex items-center gap-1.5 text-slate-400">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      Real-time sync with Chamber #104
+                    </span>
+                    <a href="/doctor" target="_blank" class="text-slate-400 hover:text-blue-300 transition-colors inline-flex items-center gap-1 font-medium">
+                      <span>Doctor Workstation</span>
+                      <span class="font-mono text-[10px] text-blue-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">/doctor ↗</span>
+                    </a>
                   </div>
-                  <span class="text-[11px] font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live
-                  </span>
-                </div>
-
-                <!-- Active Patient Dossier inside Chamber -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 relative">
-                  <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
-                    <span class="font-bold text-slate-300 uppercase text-[10px] tracking-wider">Active Patient In Chamber</span>
-                    <span id="docPatientHoldBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300">Turn 1 (Not skipped)</span>
-                  </div>
-
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <div class="flex items-center gap-2">
-                        <span id="docActiveToken" class="text-2xl font-black font-mono text-emerald-400">#SQ-1042</span>
-                        <span id="docActiveArrived" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🟢 Arrived in Hall</span>
-                      </div>
-                      <h5 id="docActiveName" class="text-base font-bold text-white mt-1">Aarav Kumar</h5>
-                      <p id="docActiveMeta" class="text-xs text-slate-400 mt-0.5">42 yrs • Male • 📱 +91 98765 43210</p>
-                      <p id="docActiveProblem" class="text-xs text-slate-300 mt-2 bg-slate-950/70 p-2 rounded-xl border border-slate-800/80">
-                        🩺 <strong>Symptoms:</strong> Persistent high fever (3 days) & body ache
-                      </p>
-                    </div>
-                    <div class="text-right shrink-0">
-                      <span class="text-[10px] text-slate-400 block">Session Time</span>
-                      <span id="docActiveTimer" class="font-mono text-base font-bold text-amber-400 block mt-0.5">04:12</span>
-                      <span class="text-[10px] text-slate-500 block">Avg: 6m</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Doctor Action Control Buttons -->
-                <div class="space-y-2">
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <!-- Complete & Call Next -->
-                    <button type="button" onclick="doctorCallNext()" class="py-2.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-md shadow-emerald-900/30 cursor-pointer">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                      <span>Next Patient →</span>
-                    </button>
-
-                    <!-- Put on Hold (Shift 2 Slots) -->
-                    <button type="button" onclick="doctorHoldCurrentToken()" class="py-2.5 px-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 active:scale-95 text-white text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-md shadow-amber-950/40 border border-amber-400/30 cursor-pointer" title="Patient stepped out for X-Ray/Water/Sample. Moves token 2 positions back without cancelling.">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                      <span>⏳ Hold (+2 slots)</span>
-                    </button>
-
-                    <!-- Mark Absent -->
-                    <button type="button" onclick="doctorMarkAbsent()" class="py-2.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 active:scale-95 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer" title="Mark patient absent and remove to missed roster">
-                      <span>✕</span>
-                      <span>Mark Absent</span>
-                    </button>
-                  </div>
-
-                  <!-- Secondary Operations Row -->
-                  <div class="grid grid-cols-2 gap-2 text-xs">
-                    <button type="button" onclick="doctorToggleDelay()" class="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer">
-                      <span>🚨 Ward Delay (+15m)</span>
-                    </button>
-
-                    <button type="button" onclick="doctorResetQueue()" class="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-400 hover:text-slate-200 text-[11px] font-medium transition-colors flex items-center justify-center gap-1 cursor-pointer">
-                      <span>🔄 Reset Demo</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Chamber Waiting Line Snapshot -->
-                <div class="bg-slate-900/60 p-3 rounded-2xl border border-slate-800/60">
-                  <div class="flex items-center justify-between text-[11px] text-slate-400 font-semibold mb-2">
-                    <span>Waiting Line Behind Current</span>
-                    <span id="docWaitingCount" class="font-mono text-emerald-400 font-bold">5 Waiting</span>
-                  </div>
-                  <div id="docWaitingList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                    <!-- Populated via JS -->
-                  </div>
-                </div>
-
-                <!-- Back to Patient View Button & Dedicated Dashboard Launcher -->
-                <div class="pt-2 border-t border-slate-800/80 space-y-2">
-                  <a href="/doctor" target="_blank" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group cursor-pointer">
-                    <span>👨‍⚕️</span>
-                    <span>Launch Dedicated Doctor Workstation</span>
-                    <span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full font-mono">/doctor ↗</span>
-                  </a>
-                  <button type="button" onclick="setKioskViewMode('patient')" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5">
-                    <span>📺 Back to Public Patient Screen</span>
-                  </button>
                 </div>
               </div>
 
@@ -2140,7 +2031,7 @@
               <li><a href="mailto:smartqueue70@gmail.com" class="text-blue-600 font-bold hover:text-blue-800 flex items-center gap-1.5"><span>✉️</span> Support: smartqueue70@gmail.com</a></li>
               <li><a href="#" onclick="goToScreen(1); return false;" class="hover:text-slate-950">Book New Appointment</a></li>
               <li><a href="#" onclick="goToScreen(5); return false;" class="hover:text-slate-950">Live Queue & Active Tokens</a></li>
-              <li><a href="#doctor-console" onclick="openDoctorConsoleFromNav(); return false;" class="hover:text-slate-950 flex items-center gap-1.5 font-semibold text-slate-800"><span>👨‍⚕️</span> <span data-i18n="nav_doctor_console">Doctor Console</span></a></li>
+              <li><a href="/doctor" class="hover:text-slate-950 flex items-center gap-1.5 font-semibold text-slate-800"><span>👨‍⚕️</span> <span data-i18n="nav_doctor_console">Doctor Console</span><span class="text-[10px] text-blue-600 font-mono">/doctor ↗</span></a></li>
               <li><a href="#" onclick="toggleMediChat(); return false;" class="hover:text-slate-950">AI Symptom Guidance</a></li>
               <li><a href="#faq-section" class="hover:text-slate-950">Patient FAQ & Support</a></li>
             </ul>
@@ -3809,58 +3700,16 @@
     }
 
     function setKioskViewMode(mode) {
-      kioskCurrentMode = mode;
-      const patientView = document.getElementById('kioskPatientView');
-      const doctorView = document.getElementById('kioskDoctorView');
-      const tabPatient = document.getElementById('kioskTabPatient');
-      const tabDoctor = document.getElementById('kioskTabDoctor');
-
       if (mode === 'doctor') {
-        if (patientView) patientView.classList.add('hidden');
-        if (doctorView) doctorView.classList.remove('hidden');
-        if (tabDoctor) {
-          tabDoctor.className = "px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold shadow-xs transition-all cursor-pointer flex items-center gap-1.5";
-        }
-        if (tabPatient) {
-          tabPatient.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer";
-        }
-      } else {
-        if (doctorView) doctorView.classList.add('hidden');
-        if (patientView) patientView.classList.remove('hidden');
-        if (tabPatient) {
-          tabPatient.className = "px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold shadow-xs transition-all cursor-pointer";
-        }
-        if (tabDoctor) {
-          tabDoctor.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-1.5";
-        }
+        window.location.href = '/doctor';
       }
     }
 
     function openDoctorConsoleFromNav(e) {
-      if (e && (e.metaKey || e.ctrlKey)) {
-        window.open('/doctor', '_blank');
-        return;
+      if (e) {
+        try { e.preventDefault(); } catch (err) {}
       }
-      if (typeof toggleMobileMenu === 'function') {
-        toggleMobileMenu(false);
-      }
-      if (typeof goToScreen === 'function') {
-        goToScreen(0);
-      }
-      setKioskViewMode('doctor');
-      setTimeout(() => {
-        const target = document.getElementById('doctor-console') || document.getElementById('kioskContainer');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        const kiosk = document.getElementById('kioskContainer');
-        if (kiosk) {
-          kiosk.classList.add('ring-4', 'ring-emerald-400', 'ring-offset-4', 'ring-offset-slate-900');
-          setTimeout(() => {
-            kiosk.classList.remove('ring-4', 'ring-emerald-400', 'ring-offset-4', 'ring-offset-slate-900');
-          }, 2400);
-        }
-      }, 80);
+      window.location.href = '/doctor';
     }
 
     function showSmsToast(recipient, message) {

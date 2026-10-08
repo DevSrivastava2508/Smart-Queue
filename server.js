@@ -840,6 +840,53 @@ async function handleDelayOverride(req, res) {
 	}
 }
 
+async function handleRecallPatient(req, res) {
+	setCorsHeaders(res);
+	if (req.method === "OPTIONS") {
+		res.writeHead(204);
+		return res.end();
+	}
+	if (req.method !== "POST") return sendResponse(res, 405, { error: "Method Not Allowed" });
+
+	try {
+		const body = await parseRequestBody(req);
+		const tokenId = body.tokenId;
+		if (!tokenId) return sendResponse(res, 400, { error: "tokenId is required" });
+
+		let patient = liveQueueState.onHoldList.find(p => p.tokenId === tokenId) ||
+			liveQueueState.missedList.find(p => p.tokenId === tokenId) ||
+			liveQueueState.waitingQueue.find(p => p.tokenId === tokenId);
+
+		if (!patient) return sendResponse(res, 404, { error: "Patient not found in roster" });
+
+		liveQueueState.onHoldList = liveQueueState.onHoldList.filter(p => p.tokenId !== tokenId);
+		liveQueueState.missedList = liveQueueState.missedList.filter(p => p.tokenId !== tokenId);
+		liveQueueState.waitingQueue = liveQueueState.waitingQueue.filter(p => p.tokenId !== tokenId);
+
+		patient.status = "WAITING";
+		liveQueueState.waitingQueue.unshift(patient);
+
+		const notifMsg = `↩ Patient Recalled: Token ${patient.tokenId} (${patient.patientName}) recalled and placed next in line for Chamber #104.`;
+		liveQueueState.notifications.unshift({
+			id: "notif-" + Date.now(),
+			timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+			type: "SUCCESS",
+			title: "Patient Recalled",
+			message: notifMsg
+		});
+
+		console.log(`[SmartQueue Recall] ${notifMsg}`);
+
+		return sendResponse(res, 200, {
+			success: true,
+			recalledPatient: patient,
+			state: enrichQueueState(liveQueueState)
+		});
+	} catch (err) {
+		return sendResponse(res, 500, { error: err.message });
+	}
+}
+
 function handleResetQueue(req, res) {
 	setCorsHeaders(res);
 	liveQueueState = createInitialQueueState();
@@ -904,6 +951,7 @@ async function handler(req, res) {
 	if (pathname === "/api/queue/next-token") return handleNextToken(req, res);
 	if (pathname === "/api/queue/mark-absent") return handleMarkAbsent(req, res);
 	if (pathname === "/api/queue/add-patient") return handleAddPatient(req, res);
+	if (pathname === "/api/queue/recall-patient") return handleRecallPatient(req, res);
 	if (pathname === "/api/queue/delay-override") return handleDelayOverride(req, res);
 	if (pathname === "/api/queue/reset") return handleResetQueue(req, res);
 
@@ -938,6 +986,7 @@ module.exports.handleHoldToken = handleHoldToken;
 module.exports.handleNextToken = handleNextToken;
 module.exports.handleMarkAbsent = handleMarkAbsent;
 module.exports.handleAddPatient = handleAddPatient;
+module.exports.handleRecallPatient = handleRecallPatient;
 module.exports.handleDelayOverride = handleDelayOverride;
 module.exports.handleResetQueue = handleResetQueue;
 module.exports.handleChatWithKeyRotation = handleChatWithKeyRotation;
