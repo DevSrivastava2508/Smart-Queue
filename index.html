@@ -800,6 +800,9 @@
 
     .wrapper:has(.print-button:focus) .receipt-wrapper,
     .wrapper.is-printed .receipt-wrapper {
+      transform: translateY(36px) scale(1.02);
+      clip-path: inset(-20% -100px -100px -100px);
+      z-index: 5;
       animation:
         print 1.2s 1 forwards ease-in,
         display 0.4s 1 forwards cubic-bezier(0, 0.63, 0.96, 1.1);
@@ -3640,13 +3643,9 @@
           if (saved) {
             const p = JSON.parse(saved);
             if (Array.isArray(p) && p.length > 0) {
-              const valid = p.filter(a => a && a.bookingId && a.doctor && a.doctor.name && a.hospital && a.hospital.name && a.hospital.name !== 'undefined' && a.hospital.loc && a.hospital.loc !== 'undefined');
+              const valid = p.filter(a => a && a.bookingId);
               if (valid.length > 0) {
-                const latest = [valid[0]];
-                localStorage.setItem('smartqueue_appointments', JSON.stringify(latest));
-                return latest;
-              } else {
-                localStorage.removeItem('smartqueue_appointments');
+                return valid;
               }
             }
           }
@@ -4835,10 +4834,11 @@
         booked: new Date().toLocaleDateString('en-IN')
       };
 
-      // Keep strictly ONLY the current newly booked appointment ticket
-      state.appointments = [appt];
+      // Prepend newly booked appointment and retain all user appointments
+      state.appointments = Array.isArray(state.appointments) ? state.appointments : [];
+      state.appointments = [appt, ...state.appointments.filter(a => a && a.bookingId !== bookingToken)];
       try {
-        localStorage.setItem('smartqueue_appointments', JSON.stringify([appt]));
+        localStorage.setItem('smartqueue_appointments', JSON.stringify(state.appointments));
       } catch (e) {}
 
       // Send to Google Apps Script backend (original)
@@ -4975,11 +4975,11 @@
       const localizedGender = appt.patient.gender === 'Female' ? t('gender_female', 'Female') : (appt.patient.gender === 'Male' ? t('gender_male', 'Male') : (appt.patient.gender || '—'));
 
       mount.innerHTML = `
-        <div class="wrapper" id="ticketWrapper">
+        <div class="wrapper is-printed" id="ticketWrapper">
           <div class="printer"></div>
 
           <div class="printer-display">
-            <span class="printer-message"> ${t('ticket_click_print', 'Click to print')}</span>
+            <span class="printer-message"> ${t('ticket_dispensed', 'Token Dispensed')} #${appt.bookingId}</span>
             <div class="letter-wrapper">
               <span class="letter">P</span>
               <span class="letter">r</span>
@@ -5275,18 +5275,10 @@
       const printerSection = document.getElementById('ticketPrinterContainer');
       const list = document.getElementById('apptList');
 
-      // Sanitize: filter out any corrupted or dummy items with undefined fields
+      // Sanitize: retain all valid user appointments without deleting them
       state.appointments = (state.appointments || []).filter(a => 
-        a && a.bookingId && a.doctor && a.doctor.name && a.hospital && a.hospital.name && a.hospital.name !== 'undefined' && a.hospital.loc && a.hospital.loc !== 'undefined'
+        a && a.bookingId && a.doctor && a.hospital
       );
-
-      // Strictly retain ONLY the current newly booked appointment ticket
-      if (state.appointments.length > 1) {
-        state.appointments = [state.appointments[0]];
-        try {
-          localStorage.setItem('smartqueue_appointments', JSON.stringify(state.appointments));
-        } catch (e) {}
-      }
 
       if (!state.appointments.length) {
         if (printerSection) printerSection.classList.add('hidden');
@@ -5301,10 +5293,14 @@
         return;
       }
 
-      // Show and render printer ticket for the latest appointment
+      // Show and render printer ticket for the active appointment
       if (printerSection) {
         printerSection.classList.remove('hidden');
         renderPrinterTicket(state.appointments[0]);
+        const wrapper = document.getElementById('ticketWrapper');
+        if (wrapper && !wrapper.classList.contains('is-printed')) {
+          wrapper.classList.add('is-printed');
+        }
         if (justBooked) {
           setTimeout(() => {
             replayPrinterAnimation();
