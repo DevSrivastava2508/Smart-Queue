@@ -6,6 +6,7 @@
     { "source": "/api/queue/next-token", "destination": "/api/queue/next-token.js" },
     { "source": "/api/queue/delay-override", "destination": "/api/queue/delay-override.js" },
     { "source": "/api/queue/mark-absent", "destination": "/api/queue/mark-absent.js" },
+    { "source": "/api/queue/add-patient", "destination": "/api/queue/add-patient.js" },
     { "source": "/api/queue/reset", "destination": "/api/queue/reset.js" },
     { "source": "/api/chat", "destination": "/api/chat.js" },
     { "source": "/api/send-confirmation", "destination": "/api/send-confirmation.js" },

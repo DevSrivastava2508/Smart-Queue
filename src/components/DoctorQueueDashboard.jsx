@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 // Mock Initial Queue Data matching your Vercel project's schema
 const INITIAL_QUEUE = [
@@ -14,9 +14,27 @@ export default function DoctorQueueDashboard() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [backendSynced, setBackendSynced] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
   const [smsAlert, setSmsAlert] = useState(null);
+  const [portalNotice, setPortalNotice] = useState(null);
+  const activePatientRef = useRef(activePatient);
+  activePatientRef.current = activePatient;
 
-  // Helper to sync backend state with component state
+  // Broadcast sync event to main portal tabs
+  const broadcastChange = (action, state) => {
+    try {
+      if (typeof window !== 'undefined') {
+        if ('BroadcastChannel' in window) {
+          const ch = new BroadcastChannel('smartqueue_live_sync');
+          ch.postMessage({ type: 'QUEUE_UPDATED', action, state, timestamp: Date.now() });
+          ch.close();
+        }
+        localStorage.setItem('smartqueue_sync_event', JSON.stringify({ action, timestamp: Date.now() }));
+      }
+    } catch (e) {}
+  };
+
+  // Helper to map backend state to component state
   const syncFromBackendState = useCallback((state) => {
     if (!state) return;
     let mappedActive = null;
@@ -45,29 +63,73 @@ export default function DoctorQueueDashboard() {
 
     const fullQueue = mappedActive ? [mappedActive, ...mappedWaiting] : mappedWaiting;
     setQueue(fullQueue);
-    setActivePatient(mappedActive);
-    setElapsedTime(0);
+
+    // If active patient changed, reset elapsed time
+    if (mappedActive?.id !== activePatientRef.current?.id) {
+      setActivePatient(mappedActive);
+      setElapsedTime(0);
+    } else {
+      setActivePatient(mappedActive);
+    }
+
     setBackendSynced(true);
+    setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
   }, []);
 
-  // Sync with backend API on mount
-  useEffect(() => {
-    async function initQueue() {
-      try {
-        const res = await fetch('/api/queue/state');
-        if (res.ok) {
-          const data = await res.json();
-          syncFromBackendState(data);
-        }
-      } catch (err) {
-        // Fallback gracefully to local mock queue
-        console.log('[DoctorQueueDashboard] Running in local mock mode:', err.message);
+  // Fetch live state from backend API
+  const fetchLiveState = useCallback(async () => {
+    try {
+      const res = await fetch('/api/queue/state');
+      if (res.ok) {
+        const data = await res.json();
+        syncFromBackendState(data);
       }
+    } catch (err) {
+      console.log('[DoctorQueueDashboard] Operating in local mode:', err.message);
     }
-    initQueue();
   }, [syncFromBackendState]);
 
-  // Timer logic for tracking the duration of the current live consultation
+  // Initial load, BroadcastChannel listener, and heartbeat polling with main portal
+  useEffect(() => {
+    fetchLiveState();
+
+    let channel;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        channel = new BroadcastChannel('smartqueue_live_sync');
+        channel.onmessage = (event) => {
+          if (event.data?.type === 'PATIENT_BOOKED') {
+            const p = event.data.patient;
+            setPortalNotice(`🎉 New Patient Booked via Portal: ${p?.patientName || 'Patient'} (${p?.tokenId || ''}) added to waiting queue!`);
+            fetchLiveState();
+          } else if (event.data?.type === 'QUEUE_SYNC' && event.data.state) {
+            syncFromBackendState(event.data.state);
+          }
+        };
+      }
+    } catch (e) {}
+
+    // Storage event fallback for cross-tab synchronization
+    const handleStorage = (e) => {
+      if (e.key === 'smartqueue_sync_event' || e.key === 'smartqueue_patient_booked') {
+        fetchLiveState();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // Continuous 3-second heartbeat polling so separate devices on local network stay in sync
+    const interval = setInterval(() => {
+      fetchLiveState();
+    }, 3000);
+
+    return () => {
+      if (channel) channel.close();
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, [fetchLiveState, syncFromBackendState]);
+
+  // Timer logic for tracking active consultation duration
   useEffect(() => {
     let timer;
     if (activePatient) {
@@ -78,7 +140,7 @@ export default function DoctorQueueDashboard() {
     return () => clearInterval(timer);
   }, [activePatient]);
 
-  // Auto-dismiss SMS alerts after 8 seconds
+  // Auto-dismiss SMS and portal notices
   useEffect(() => {
     if (smsAlert) {
       const timeout = setTimeout(() => setSmsAlert(null), 8000);
@@ -86,7 +148,13 @@ export default function DoctorQueueDashboard() {
     }
   }, [smsAlert]);
 
-  // Format seconds into MM:SS format
+  useEffect(() => {
+    if (portalNotice) {
+      const timeout = setTimeout(() => setPortalNotice(null), 7000);
+      return () => clearTimeout(timeout);
+    }
+  }, [portalNotice]);
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -103,13 +171,12 @@ export default function DoctorQueueDashboard() {
         const data = await res.json();
         if (data.state) {
           syncFromBackendState(data.state);
+          broadcastChange('CALL_NEXT', data.state);
           setIsLoading(false);
           return;
         }
       }
-    } catch (err) {
-      // Offline fallback
-    }
+    } catch (err) {}
 
     // Local simulation fallback
     setTimeout(() => {
@@ -125,7 +192,7 @@ export default function DoctorQueueDashboard() {
         setQueue([]);
       }
       setIsLoading(false);
-    }, 400);
+    }, 300);
   };
 
   // Action 2: Put Current Patient on Hold (Move 2 spots back)
@@ -136,7 +203,7 @@ export default function DoctorQueueDashboard() {
     const current = { ...activePatient, holdCount: activePatient.holdCount + 1 };
     const remainingWaiting = queue.filter(p => p.id !== current.id);
 
-    // If patient skipped more than twice, mark them as strictly ABSENT/MISSED
+    // If patient skipped twice, mark absent
     if (current.holdCount >= 2) {
       alert(`${current.id} has been skipped twice. Pushing to Absentee Roster.`);
       await handleMarkAbsent();
@@ -157,19 +224,17 @@ export default function DoctorQueueDashboard() {
           if (data.simulatedSMS) {
             setSmsAlert(data.simulatedSMS);
           }
+          broadcastChange('HOLD_TOKEN', data.state);
           setIsLoading(false);
           return;
         }
       }
-    } catch (err) {
-      // Offline fallback
-    }
+    } catch (err) {}
 
     // Local simulation fallback
     setTimeout(() => {
       current.status = 'WAITING';
       const insertIndex = Math.min(2, remainingWaiting.length);
-      
       const newQueue = [...remainingWaiting];
       newQueue.splice(insertIndex, 0, current);
 
@@ -187,7 +252,7 @@ export default function DoctorQueueDashboard() {
         message: `SmartQueue Alert: Token ${current.id} was paused and shifted 2 slots back (~12m buffer). Please return to Chamber #104.`
       });
       setIsLoading(false);
-    }, 400);
+    }, 300);
   };
 
   // Action 3: Mark Patient Completely Absent
@@ -200,13 +265,12 @@ export default function DoctorQueueDashboard() {
         const data = await res.json();
         if (data.state) {
           syncFromBackendState(data.state);
+          broadcastChange('MARK_ABSENT', data.state);
           setIsLoading(false);
           return;
         }
       }
-    } catch (err) {
-      // Offline fallback
-    }
+    } catch (err) {}
 
     // Local simulation fallback
     setTimeout(() => {
@@ -221,11 +285,23 @@ export default function DoctorQueueDashboard() {
         setActivePatient(null);
       }
       setIsLoading(false);
-    }, 400);
+    }, 300);
   };
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-6 font-sans text-slate-800">
+      
+      {/* Portal Live Notice Toast (When new patient books on portal) */}
+      {portalNotice && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 max-w-lg w-full bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-emerald-500/50 flex items-center justify-between gap-3 animate-bounce">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">🔔</span>
+            <p className="text-xs font-semibold text-emerald-300">{portalNotice}</p>
+          </div>
+          <button onClick={() => setPortalNotice(null)} className="text-slate-400 hover:text-white text-xs">✕</button>
+        </div>
+      )}
+
       {/* Simulated SMS Toast notification */}
       {smsAlert && (
         <div className="fixed top-5 right-5 z-50 max-w-md w-full bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 animate-bounce">
@@ -245,7 +321,7 @@ export default function DoctorQueueDashboard() {
         </div>
       )}
 
-      {/* Top Header Panel */}
+      {/* Top Header Panel with Bidirectional Connection Badges */}
       <div className="mx-auto max-w-6xl mb-6 flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-200 pb-4 gap-4">
         <div>
           <div className="flex items-center gap-2.5">
@@ -254,13 +330,29 @@ export default function DoctorQueueDashboard() {
           </div>
           <p className="text-sm text-slate-500 mt-1">MMG District Hospital • Orthopedics Wing (Chamber #104)</p>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            {backendSynced ? 'Queue Engine Connected' : 'Queue Engine Active'}
+        
+        {/* Connection Bar linking to Main Portal */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-800 border border-emerald-300 shadow-2xs">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <span>Live Synced with Main Portal</span>
+            {lastSyncTime && <span className="text-[10px] text-emerald-600 font-normal">({lastSyncTime})</span>}
           </span>
-          <a href="/" className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors shadow-xs">
-            ← Back to Patient Portal
+          <a
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 transition-colors shadow-xs"
+            title="Return to Main SmartQueue Patient Booking Portal"
+          >
+            <span>🏠</span>
+            <span>Main Portal</span>
+          </a>
+          <a
+            href="/#kioskContainer"
+            className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white transition-colors shadow-xs"
+            title="Open Live Kiosk Display"
+          >
+            <span>📺</span>
+            <span>Public Kiosk</span>
           </a>
         </div>
       </div>

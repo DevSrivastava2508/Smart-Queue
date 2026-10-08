@@ -746,6 +746,61 @@ async function handleMarkAbsent(req, res) {
 	}
 }
 
+async function handleAddPatient(req, res) {
+	setCorsHeaders(res);
+	if (req.method === "OPTIONS") {
+		res.writeHead(204);
+		return res.end();
+	}
+	if (req.method !== "POST") return sendResponse(res, 405, { error: "Method Not Allowed" });
+
+	try {
+		const body = await parseRequestBody(req);
+		const newPatient = {
+			tokenId: body.tokenId || `SQ-${1048 + liveQueueState.waitingQueue.length + liveQueueState.completedList.length}`,
+			patientName: body.patientName || "Online Patient",
+			age: parseInt(body.age, 10) || 30,
+			gender: body.gender || "Other",
+			phone: body.phone || body.patientPhone || "+91 98765 00000",
+			problem: body.problem || body.concern || body.symptoms || "General OPD Consultation",
+			status: "WAITING",
+			holdCount: 0,
+			bookedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+		};
+
+		if (!liveQueueState.activeToken) {
+			newPatient.status = "IN_CHAMBER";
+			newPatient.consultationStartedAt = Date.now();
+			liveQueueState.activeToken = newPatient;
+		} else {
+			const exists = liveQueueState.waitingQueue.some(p => p.tokenId === newPatient.tokenId) ||
+				(liveQueueState.activeToken && liveQueueState.activeToken.tokenId === newPatient.tokenId);
+			if (!exists) {
+				liveQueueState.waitingQueue.push(newPatient);
+			}
+		}
+
+		const notifMsg = `📋 Token ${newPatient.tokenId} (${newPatient.patientName}) booked via portal and queued for Chamber #104.`;
+		liveQueueState.notifications.unshift({
+			id: "notif-" + Date.now(),
+			timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+			type: "INFO",
+			title: "New Patient Queued",
+			message: notifMsg
+		});
+
+		console.log(`[SmartQueue New Patient] ${notifMsg}`);
+
+		return sendResponse(res, 200, {
+			success: true,
+			patient: newPatient,
+			state: enrichQueueState(liveQueueState)
+		});
+	} catch (err) {
+		return sendResponse(res, 500, { error: err.message });
+	}
+}
+
 async function handleDelayOverride(req, res) {
 	setCorsHeaders(res);
 	if (req.method === "OPTIONS") {
@@ -848,6 +903,7 @@ async function handler(req, res) {
 	if (pathname === "/api/queue/hold-token") return handleHoldToken(req, res);
 	if (pathname === "/api/queue/next-token") return handleNextToken(req, res);
 	if (pathname === "/api/queue/mark-absent") return handleMarkAbsent(req, res);
+	if (pathname === "/api/queue/add-patient") return handleAddPatient(req, res);
 	if (pathname === "/api/queue/delay-override") return handleDelayOverride(req, res);
 	if (pathname === "/api/queue/reset") return handleResetQueue(req, res);
 
@@ -881,6 +937,7 @@ module.exports.handleGetQueueState = handleGetQueueState;
 module.exports.handleHoldToken = handleHoldToken;
 module.exports.handleNextToken = handleNextToken;
 module.exports.handleMarkAbsent = handleMarkAbsent;
+module.exports.handleAddPatient = handleAddPatient;
 module.exports.handleDelayOverride = handleDelayOverride;
 module.exports.handleResetQueue = handleResetQueue;
 module.exports.handleChatWithKeyRotation = handleChatWithKeyRotation;

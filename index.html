@@ -991,9 +991,10 @@
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span data-i18n="nav_live_queue">Live Queue</span>
           </a>
-          <a href="#doctor-console" onclick="openDoctorConsoleFromNav(); return false;" class="hover:text-slate-950 transition-colors inline-flex items-center gap-1.5 text-slate-700 font-bold group">
+          <a href="/doctor" onclick="if(!event.metaKey && !event.ctrlKey){ openDoctorConsoleFromNav(event); return false; }" class="hover:text-slate-950 transition-colors inline-flex items-center gap-1.5 text-slate-700 font-bold group" title="Doctor Console (Chamber 104) — click to scroll or Cmd/Ctrl+click to open /doctor">
             <span class="text-xs">👨‍⚕️</span>
             <span data-i18n="nav_doctor_console">Doctor Console</span>
+            <span class="hidden xl:inline-block text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">/doctor ↗</span>
           </a>
           <a href="#faq-section" data-i18n="nav_faq" class="hover:text-slate-950 transition-colors">FAQ</a>
         </nav>
@@ -1060,6 +1061,13 @@
               <span data-i18n="nav_doctor_console">Doctor Console</span>
             </span>
             <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-bold uppercase">Chamber 104</span>
+          </a>
+          <a href="/doctor" target="_blank" onclick="toggleMobileMenu(false)" class="px-3 py-2 rounded-lg bg-blue-50/80 hover:bg-blue-100 text-blue-900 transition-colors flex items-center justify-between text-xs font-bold border border-blue-200/80">
+            <span class="flex items-center gap-2">
+              <span>🚀</span>
+              <span>Open Dedicated Doctor App</span>
+            </span>
+            <span class="font-mono text-[10px] text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">/doctor ↗</span>
           </a>
           <a href="#faq-section" onclick="toggleMobileMenu(false)" data-i18n="nav_faq" class="px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors">FAQ</a>
         </div>
@@ -1293,10 +1301,13 @@
                 </div>
 
                 <!-- Patient View Bottom Actions -->
-                <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+                <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80">
                   <button type="button" onclick="setKioskViewMode('doctor')" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
-                    <span>👨‍⚕️ Switch to Doctor Console</span>
+                    <span>👨‍⚕️ Chamber Workstation</span>
                   </button>
+                  <a href="/doctor" target="_blank" class="py-2.5 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer" title="Open Dedicated Doctor Console (/doctor)">
+                    <span>/doctor ↗</span>
+                  </a>
                   <button type="button" onclick="goToScreen(1)" class="btn-shine-sweep flex-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
                     <span>Get My Token</span>
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
@@ -1392,8 +1403,13 @@
                   </div>
                 </div>
 
-                <!-- Back to Patient View Button -->
-                <div class="pt-1 border-t border-slate-800/80">
+                <!-- Back to Patient View Button & Dedicated Dashboard Launcher -->
+                <div class="pt-2 border-t border-slate-800/80 space-y-2">
+                  <a href="/doctor" target="_blank" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-600 hover:to-indigo-600 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 group cursor-pointer">
+                    <span>👨‍⚕️</span>
+                    <span>Launch Dedicated Doctor Workstation</span>
+                    <span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full font-mono">/doctor ↗</span>
+                  </a>
                   <button type="button" onclick="setKioskViewMode('patient')" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5">
                     <span>📺 Back to Public Patient Screen</span>
                   </button>
@@ -3820,7 +3836,11 @@
       }
     }
 
-    function openDoctorConsoleFromNav() {
+    function openDoctorConsoleFromNav(e) {
+      if (e && (e.metaKey || e.ctrlKey)) {
+        window.open('/doctor', '_blank');
+        return;
+      }
       if (typeof toggleMobileMenu === 'function') {
         toggleMobileMenu(false);
       }
@@ -4585,6 +4605,35 @@
           console.warn('[SmartQueue] Email sending failed (server may be offline):', err.message);
         });
       }
+
+      // Connect to Live Queue Backend & Dedicated Doctor Dashboard
+      fetch('/api/queue/add-patient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tokenId: bookingToken,
+          patientName: patientName || 'Patient',
+          age: state.patient.age || 30,
+          gender: state.patient.gender || 'Other',
+          phone: state.patient.phone || '',
+          problem: state.problem || 'General OPD Consultation'
+        })
+      }).then(r => r.json()).then(res => {
+        if (res.state) {
+          currentLiveQueue = res.state;
+          renderQueueUI(currentLiveQueue);
+        }
+        try {
+          if ('BroadcastChannel' in window) {
+            const bc = new BroadcastChannel('smartqueue_live_sync');
+            bc.postMessage({ type: 'PATIENT_BOOKED', patient: res.patient || { tokenId: bookingToken, patientName } });
+            bc.close();
+          }
+          localStorage.setItem('smartqueue_patient_booked', JSON.stringify({ tokenId: bookingToken, timestamp: Date.now() }));
+        } catch (e) {}
+      }).catch(err => {
+        console.log('[SmartQueue] Note: Local queue sync fallback:', err.message);
+      });
 
       renderAppointments(true);
       goToScreen(5, true);
@@ -5609,6 +5658,39 @@ Be concise, warm and helpful. Support Hindi or English.`;
     window.addEventListener('DOMContentLoaded', () => {
       fetchLiveQueueState();
       checkSupabaseSession();
+
+      // Real-time synchronization connection with Dedicated Doctor Dashboard
+      try {
+        if ('BroadcastChannel' in window) {
+          const liveSyncChannel = new BroadcastChannel('smartqueue_live_sync');
+          liveSyncChannel.onmessage = (event) => {
+            if (event.data?.type === 'QUEUE_UPDATED') {
+              console.log('[SmartQueue Portal] Real-time queue event received from Doctor Console:', event.data.action);
+              if (event.data.state) {
+                currentLiveQueue = event.data.state;
+                renderQueueUI(currentLiveQueue);
+              } else {
+                fetchLiveQueueState();
+              }
+              if (event.data.action === 'CALL_NEXT') playChime('call');
+              else if (event.data.action === 'HOLD_TOKEN') playChime('hold');
+              else if (event.data.action === 'MARK_ABSENT') playChime('alert');
+            }
+          };
+        }
+      } catch (e) {}
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'smartqueue_sync_event') {
+          fetchLiveQueueState();
+        }
+      });
+
+      // Background heartbeat polling every 3.5 seconds
+      setInterval(() => {
+        fetchLiveQueueState();
+      }, 3500);
+
       if (window.smartQueueAuth && window.smartQueueAuth.client) {
         window.smartQueueAuth.client.auth.onAuthStateChange((event, session) => {
           if (event === 'SIGNED_IN' && session && session.user) {
