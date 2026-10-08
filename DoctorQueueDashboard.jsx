@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 // Mock Initial Queue Data matching your project's schema
 const INITIAL_QUEUE = [
-  { id: 'SQ-1042', name: 'Rajesh K. Sharma', age: 52, gender: 'Male', symptoms: 'Chronic knee pain, swelling', phone: '+9198765XXXXX', status: 'ACTIVE', holdCount: 0 },
-  { id: 'SQ-1043', name: 'Sunita Devi', age: 43, gender: 'Female', symptoms: 'Severe lower back stiffness', phone: '+9199112XXXXX', status: 'WAITING', holdCount: 0 },
-  { id: 'SQ-1044', name: 'Amit Saxena', age: 29, gender: 'Male', symptoms: 'Follow-up on ankle fracture plaster', phone: '+9195601XXXXX', status: 'WAITING', holdCount: 0 },
-  { id: 'SQ-1045', name: 'Meena Verma', age: 61, gender: 'Female', symptoms: 'Acute gout flare-up in right toe', phone: '+9198100XXXXX', status: 'WAITING', holdCount: 0 }
+  { id: 'SQ-1042', name: 'Rajesh K. Sharma', age: 52, gender: 'Male', symptoms: 'Chronic knee pain, swelling', phone: '+9198765XXXXX', status: 'ACTIVE', arrivalStatus: 'ARRIVED', arrivedAt: '8:10 AM', holdCount: 0 },
+  { id: 'SQ-1043', name: 'Sunita Devi', age: 43, gender: 'Female', symptoms: 'Severe lower back stiffness', phone: '+9199112XXXXX', status: 'WAITING', arrivalStatus: 'ARRIVED', arrivedAt: '8:12 AM', holdCount: 0 },
+  { id: 'SQ-1044', name: 'Amit Saxena', age: 29, gender: 'Male', symptoms: 'Follow-up on ankle fracture plaster', phone: '+9195601XXXXX', status: 'WAITING', arrivalStatus: 'BOOKED', holdCount: 0 },
+  { id: 'SQ-1045', name: 'Meena Verma', age: 61, gender: 'Female', symptoms: 'Acute gout flare-up in right toe', phone: '+9198100XXXXX', status: 'WAITING', arrivalStatus: 'BOOKED', holdCount: 0 }
 ];
 
 export default function DoctorQueueDashboard() {
@@ -53,6 +53,8 @@ export default function DoctorQueueDashboard() {
         symptoms: state.activeToken.problem || 'General OPD Consultation',
         phone: state.activeToken.phone,
         status: 'ACTIVE',
+        arrivalStatus: state.activeToken.arrivalStatus || 'ARRIVED',
+        arrivedAt: state.activeToken.arrivedAt || null,
         holdCount: state.activeToken.holdCount || 0
       };
     }
@@ -65,6 +67,8 @@ export default function DoctorQueueDashboard() {
       symptoms: p.problem || 'General OPD Consultation',
       phone: p.phone,
       status: p.status || 'WAITING',
+      arrivalStatus: p.arrivalStatus || 'BOOKED',
+      arrivedAt: p.arrivedAt || null,
       holdCount: p.holdCount || 0,
       estimatedWaitMins: p.estimatedWaitMins || 0,
       estimatedTime: p.estimatedTime || ''
@@ -136,6 +140,10 @@ export default function DoctorQueueDashboard() {
             const p = event.data.patient;
             setPortalNotice(`🎉 New Patient Booked via Portal: ${p?.patientName || 'Patient'} (${p?.tokenId || ''}) added to waiting queue!`);
             fetchLiveState();
+          } else if (event.data?.type === 'PATIENT_ARRIVED') {
+            const p = event.data;
+            setPortalNotice(`📍 Patient Arrived: ${p?.patientName || 'Patient'} (${p?.tokenId || ''}) is now in Waiting Hall (GPS Verified)!`);
+            fetchLiveState();
           } else if (event.data?.type === 'QUEUE_SYNC' && event.data.state) {
             syncFromBackendState(event.data.state);
           }
@@ -144,7 +152,7 @@ export default function DoctorQueueDashboard() {
     } catch (e) {}
 
     const handleStorage = (e) => {
-      if (e.key === 'smartqueue_sync_event' || e.key === 'smartqueue_patient_booked') {
+      if (e.key === 'smartqueue_sync_event' || e.key === 'smartqueue_patient_booked' || e.key === 'smartqueue_patient_arrived') {
         fetchLiveState();
       }
     };
@@ -522,6 +530,19 @@ export default function DoctorQueueDashboard() {
                     <p className="text-sm text-slate-500 mt-0.5">
                       {activePatient.gender} • {activePatient.age} Years Old • {activePatient.phone}
                     </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs font-semibold text-slate-500">Presence:</span>
+                      {activePatient.arrivalStatus === 'ARRIVED' ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                          Arrived (In Waiting Hall)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                          <span>📅</span> Booked (En Route)
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {activePatient.holdCount > 0 && (
                     <span className="text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 rounded-md px-2.5 py-1">
@@ -629,9 +650,19 @@ export default function DoctorQueueDashboard() {
                   className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl transition-all hover:border-slate-300"
                 >
                   <div className="min-w-0 pr-2">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xs font-mono font-bold text-slate-500">{patient.id}</span>
                       <h4 className="text-sm font-semibold text-slate-800 truncate">{patient.name}</h4>
+                      {patient.arrivalStatus === 'ARRIVED' ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          Arrived (In Waiting Hall)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                          <span>📅</span> Booked (En Route)
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">
                       Est. wait: ~{(index + 1) * 6 + delayMinutes} mins

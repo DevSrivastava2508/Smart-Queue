@@ -487,15 +487,17 @@ function createInitialQueueState() {
 			phone: "+91 98765 43210",
 			problem: "Persistent high fever (3 days) & body ache",
 			status: "IN_CHAMBER",
+			arrivalStatus: "ARRIVED",
+			arrivedAt: "8:10 AM",
 			holdCount: 0,
 			consultationStartedAt: now - 4 * 60 * 1000
 		},
 		waitingQueue: [
-			{ tokenId: "SQ-1043", patientName: "Sunita Devi", age: 58, gender: "Female", phone: "+91 98111 22334", problem: "Severe joint pain & knee stiffness", status: "WAITING", holdCount: 0 },
-			{ tokenId: "SQ-1044", patientName: "Rajesh Verma", age: 34, gender: "Male", phone: "+91 98222 33445", problem: "Acute throat infection & dry cough", status: "WAITING", holdCount: 0 },
-			{ tokenId: "SQ-1045", patientName: "Pooja Sharma", age: 29, gender: "Female", phone: "+91 98333 44556", problem: "Migraine & vertigo episodes", status: "WAITING", holdCount: 0 },
-			{ tokenId: "SQ-1046", patientName: "Mohammed Farhan", age: 51, gender: "Male", phone: "+91 98444 55667", problem: "High blood pressure follow-up", status: "WAITING", holdCount: 0 },
-			{ tokenId: "SQ-1047", patientName: "Kavita Singh", age: 46, gender: "Female", phone: "+91 98555 66778", problem: "Abdominal pain & acidity", status: "WAITING", holdCount: 0 }
+			{ tokenId: "SQ-1043", patientName: "Sunita Devi", age: 58, gender: "Female", phone: "+91 98111 22334", problem: "Severe joint pain & knee stiffness", status: "WAITING", arrivalStatus: "ARRIVED", arrivedAt: "8:12 AM", holdCount: 0 },
+			{ tokenId: "SQ-1044", patientName: "Rajesh Verma", age: 34, gender: "Male", phone: "+91 98222 33445", problem: "Acute throat infection & dry cough", status: "WAITING", arrivalStatus: "ARRIVED", arrivedAt: "8:16 AM", holdCount: 0 },
+			{ tokenId: "SQ-1045", patientName: "Pooja Sharma", age: 29, gender: "Female", phone: "+91 98333 44556", problem: "Migraine & vertigo episodes", status: "WAITING", arrivalStatus: "BOOKED", holdCount: 0 },
+			{ tokenId: "SQ-1046", patientName: "Mohammed Farhan", age: 51, gender: "Male", phone: "+91 98444 55667", problem: "High blood pressure follow-up", status: "WAITING", arrivalStatus: "BOOKED", holdCount: 0 },
+			{ tokenId: "SQ-1047", patientName: "Kavita Singh", age: 46, gender: "Female", phone: "+91 98555 66778", problem: "Abdominal pain & acidity", status: "WAITING", arrivalStatus: "BOOKED", holdCount: 0 }
 		],
 		onHoldList: [],
 		completedList: [],
@@ -764,6 +766,7 @@ async function handleAddPatient(req, res) {
 			phone: body.phone || body.patientPhone || "+91 98765 00000",
 			problem: body.problem || body.concern || body.symptoms || "General OPD Consultation",
 			status: "WAITING",
+			arrivalStatus: "BOOKED",
 			holdCount: 0,
 			bookedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 		};
@@ -897,6 +900,69 @@ function handleResetQueue(req, res) {
 	});
 }
 
+async function handlePatientArrived(req, res) {
+	setCorsHeaders(res);
+	if (req.method === "OPTIONS") {
+		res.writeHead(204);
+		return res.end();
+	}
+	if (req.method !== "POST") return sendResponse(res, 405, { error: "Method Not Allowed" });
+
+	try {
+		const body = await parseRequestBody(req);
+		const tokenId = body.tokenId;
+		const arrivalTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+		let foundPatient = null;
+		if (liveQueueState.activeToken && liveQueueState.activeToken.tokenId === tokenId) {
+			liveQueueState.activeToken.arrivalStatus = "ARRIVED";
+			liveQueueState.activeToken.arrivedAt = arrivalTime;
+			foundPatient = liveQueueState.activeToken;
+		}
+
+		if (liveQueueState.waitingQueue) {
+			const p = liveQueueState.waitingQueue.find(w => w.tokenId === tokenId);
+			if (p) {
+				p.arrivalStatus = "ARRIVED";
+				p.arrivedAt = arrivalTime;
+				if (!foundPatient) foundPatient = p;
+			}
+		}
+
+		if (!foundPatient) {
+			foundPatient = {
+				tokenId: tokenId || "SQ-PATIENT",
+				patientName: body.patientName || "Arrived Patient",
+				arrivalStatus: "ARRIVED",
+				arrivedAt: arrivalTime
+			};
+		}
+
+		const notifMsg = `📍 Patient Arrived: Token ${tokenId} (${foundPatient.patientName}) confirmed arrival in Waiting Hall (GPS Verified).`;
+		liveQueueState.notifications.unshift({
+			id: "notif-" + Date.now(),
+			timestamp: arrivalTime,
+			type: "SUCCESS",
+			title: "Patient In Waiting Hall",
+			message: notifMsg,
+			tokenId
+		});
+
+		console.log(`[SmartQueue Arrived] ${notifMsg}`);
+
+		return sendResponse(res, 200, {
+			success: true,
+			tokenId,
+			arrivalStatus: "ARRIVED",
+			arrivedAt: arrivalTime,
+			patient: foundPatient,
+			state: enrichQueueState(liveQueueState)
+		});
+	} catch (err) {
+		return sendResponse(res, 500, { error: err.message });
+	}
+}
+
 const MIME_TYPES = {
 	".html": "text/html; charset=utf-8",
 	".css": "text/css; charset=utf-8",
@@ -953,6 +1019,7 @@ async function handler(req, res) {
 	if (pathname === "/api/queue/add-patient") return handleAddPatient(req, res);
 	if (pathname === "/api/queue/recall-patient") return handleRecallPatient(req, res);
 	if (pathname === "/api/queue/delay-override") return handleDelayOverride(req, res);
+	if (pathname === "/api/queue/patient-arrived") return handlePatientArrived(req, res);
 	if (pathname === "/api/queue/reset") return handleResetQueue(req, res);
 
 	let safePath = path.normalize(decodeURIComponent(pathname)).replace(/^(\.\.[\/\\])+/, "");
@@ -989,6 +1056,7 @@ module.exports.handleAddPatient = handleAddPatient;
 module.exports.handleRecallPatient = handleRecallPatient;
 module.exports.handleDelayOverride = handleDelayOverride;
 module.exports.handleResetQueue = handleResetQueue;
+module.exports.handlePatientArrived = handlePatientArrived;
 module.exports.handleChatWithKeyRotation = handleChatWithKeyRotation;
 
 //#endregion
