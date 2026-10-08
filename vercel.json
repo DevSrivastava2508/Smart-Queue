@@ -1,7 +1,9 @@
 {
   "version": 2,
   "rewrites": [
+    { "source": "/doctor", "destination": "/doctor.html" },
     { "source": "/api/queue/state", "destination": "/api/queue/state.js" },
+    { "source": "/api/queue/patient-arrived", "destination": "/api/queue/patient-arrived.js" },
     { "source": "/api/queue/hold-token", "destination": "/api/queue/hold-token.js" },
     { "source": "/api/queue/next-token", "destination": "/api/queue/next-token.js" },
     { "source": "/api/queue/delay-override", "destination": "/api/queue/delay-override.js" },
