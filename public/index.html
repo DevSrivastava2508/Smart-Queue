@@ -1186,16 +1186,34 @@
               <div class="absolute top-0 right-0 w-48 h-48 bg-blue-600/20 rounded-full filter blur-3xl pointer-events-none"></div>
 
               <!-- Top Bar of Kiosk Display: Location & Status -->
-              <div class="flex items-center justify-between pb-3.5 border-b border-slate-800/80 mb-4 gap-2 text-xs">
+              <div class="flex items-center justify-between pb-3.5 border-b border-slate-800/80 mb-3.5 gap-2 text-xs">
                 <div class="flex items-center gap-2 min-w-0">
                   <span class="radar-beacon w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
-                  <span class="font-bold tracking-wide text-slate-200 uppercase text-[11px] truncate">MMG District Hospital • OPD Wing 2</span>
+                  <span id="kioskHospitalName" class="font-bold tracking-wide text-slate-200 uppercase text-[11px] truncate">MMG District Hospital • OPD Wing 2</span>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>OPD Counter Live</span>
                   </span>
+                </div>
+              </div>
+
+              <!-- Interactive Specialist Queue Selector on Patient Portal -->
+              <div class="mb-4 p-2 sm:p-2.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs shadow-inner">
+                <div class="flex items-center gap-1.5 text-slate-300 font-semibold shrink-0 pl-1">
+                  <span class="text-sm">🩺</span>
+                  <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Consult Specialist Queue:</span>
+                </div>
+                <div class="relative flex-1 max-w-full sm:max-w-xs">
+                  <select id="kioskSpecialistSelect" onchange="onSelectSpecialistQueue(this.value)" class="w-full bg-slate-950 text-white font-semibold text-xs rounded-xl px-3 py-2 border border-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer transition-colors shadow-2xs">
+                    <option value="1">🩺 Dr. Priya Sharma (General Physician • Ch. #104)</option>
+                    <option value="2">❤️ Dr. Rohan Mehta (Cardiologist • Ch. #206)</option>
+                    <option value="3">🔬 Dr. Anita Gupta (Dermatologist • Ch. #302)</option>
+                    <option value="4">🦴 Dr. Suresh Verma (Orthopedic • Ch. #115)</option>
+                    <option value="5">👶 Dr. Kavita Nair (Pediatrician • Ch. #108)</option>
+                    <option value="6">👂 Dr. Arun Tiwari (ENT Specialist • Ch. #214)</option>
+                  </select>
                 </div>
               </div>
 
@@ -1239,15 +1257,15 @@
                 <!-- Doctor Status & Info -->
                 <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-2xl border border-slate-800/80">
                   <div class="flex items-center gap-3">
-                    <img class="w-11 h-11 rounded-xl object-cover border border-slate-700 shadow-sm" src="images/doctors/dr-priya-sharma.jpg" alt="Dr. Priya Sharma"/>
+                    <img id="kioskDoctorPhoto" class="w-11 h-11 rounded-xl object-cover border border-slate-700 shadow-sm" src="images/doctors/dr-priya-sharma.jpg" alt="Doctor Photo"/>
                     <div>
-                      <h4 class="font-bold text-sm text-white">Dr. Priya Sharma</h4>
-                      <p class="text-xs text-blue-400 font-medium">General Medicine • Senior Consultant</p>
+                      <h4 id="kioskDoctorName" class="font-bold text-sm text-white">Dr. Priya Sharma</h4>
+                      <p id="kioskDoctorSpec" class="text-xs text-blue-400 font-medium">General Medicine • Senior Consultant</p>
                     </div>
                   </div>
                   <div class="text-right">
-                    <span class="text-[10px] font-semibold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 inline-block">● Chamber #104</span>
-                    <span class="text-[10px] text-slate-400 block mt-1">Avg 6m / patient</span>
+                    <span id="kioskChamberBadge" class="text-[10px] font-semibold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 inline-block">● Chamber #104</span>
+                    <span id="kioskDoctorAvg" class="text-[10px] text-slate-400 block mt-1">Avg 6m / patient</span>
                   </div>
                 </div>
 
@@ -1290,14 +1308,14 @@
 
                 <!-- Patient View Bottom Actions -->
                 <div class="pt-3 border-t border-slate-800/80 space-y-2.5">
-                  <button type="button" onclick="goToScreen(1)" class="btn-shine-sweep w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
-                    <span>Book Appointment &amp; Get Token</span>
+                  <button type="button" onclick="bookWithCurrentSpecialist()" class="btn-shine-sweep w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white text-sm font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer">
+                    <span id="kioskBookBtnText">Book Appointment &amp; Get Token</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                   </button>
                   <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
                     <span class="flex items-center gap-1.5 text-slate-400">
                       <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                      Real-time sync with Chamber #104
+                      <span id="kioskSyncChamberText">Real-time sync with Chamber #104</span>
                     </span>
                     <a href="/doctor" target="_blank" class="text-slate-400 hover:text-blue-300 transition-colors inline-flex items-center gap-1 font-medium">
                       <span>Doctor Workstation</span>
@@ -1760,7 +1778,11 @@
                   ★ 4.9 <span class="text-slate-400 font-normal">(420 reviews)</span>
                 </div>
               </div>
-              <div class="mt-5 pt-4 border-t border-slate-100">
+              <div class="mt-5 pt-4 border-t border-slate-100 space-y-2">
+                <button type="button" onclick="viewSpecialistQueue(1)" class="w-full py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-all border border-blue-200/80 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>👁️ View Live Queue</span>
+                </button>
                 <button type="button" onclick="bookWithDoctor(1)" class="btn-shine-sweep w-full py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold transition-colors">
                   Consult Dr. Priya
                 </button>
@@ -1778,7 +1800,11 @@
                   ★ 4.9 <span class="text-slate-400 font-normal">(310 reviews)</span>
                 </div>
               </div>
-              <div class="mt-5 pt-4 border-t border-slate-100">
+              <div class="mt-5 pt-4 border-t border-slate-100 space-y-2">
+                <button type="button" onclick="viewSpecialistQueue(2)" class="w-full py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-all border border-blue-200/80 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>👁️ View Live Queue</span>
+                </button>
                 <button type="button" onclick="bookWithDoctor(2)" class="btn-shine-sweep w-full py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold transition-colors">
                   Consult Dr. Rohan
                 </button>
@@ -1796,7 +1822,11 @@
                   ★ 4.8 <span class="text-slate-400 font-normal">(285 reviews)</span>
                 </div>
               </div>
-              <div class="mt-5 pt-4 border-t border-slate-100">
+              <div class="mt-5 pt-4 border-t border-slate-100 space-y-2">
+                <button type="button" onclick="viewSpecialistQueue(3)" class="w-full py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-all border border-blue-200/80 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>👁️ View Live Queue</span>
+                </button>
                 <button type="button" onclick="bookWithDoctor(3)" class="btn-shine-sweep w-full py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold transition-colors">
                   Consult Dr. Anita
                 </button>
@@ -1814,8 +1844,12 @@
                   ★ 4.9 <span class="text-slate-400 font-normal">(530 reviews)</span>
                 </div>
               </div>
-              <div class="mt-5 pt-4 border-t border-slate-100">
-                <button type="button" onclick="bookWithDoctor(5)" class="btn-shine-sweep w-full py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold transition-colors">
+              <div class="mt-5 pt-4 border-t border-slate-100 space-y-2">
+                <button type="button" onclick="viewSpecialistQueue(4)" class="w-full py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-all border border-blue-200/80 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>👁️ View Live Queue</span>
+                </button>
+                <button type="button" onclick="bookWithDoctor(4)" class="btn-shine-sweep w-full py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold transition-colors">
                   Consult Dr. Suresh
                 </button>
               </div>
@@ -3736,12 +3770,17 @@
       if (toast) toast.classList.add('hidden');
     }
 
-    function getLocalFallbackQueueState() {
-      return {
-        hospital: "MMG District Hospital",
+    // ── TOP SPECIALIST QUEUE REGISTRY & DISPATCHER ──────────────
+    let selectedSpecialistId = 1;
+
+    const SPECIALIST_QUEUES = {
+      1: {
+        id: 1,
+        hospital: "MMG District Hospital • OPD Wing 2",
         chamber: "Chamber #104",
         doctor: "Dr. Priya Sharma",
-        specialty: "General Medicine",
+        specialty: "General Medicine • Senior Consultant",
+        doctorPhoto: "images/doctors/dr-priya-sharma.jpg",
         avgConsultationMins: 6,
         delayMinutes: 0,
         emergencyReason: "",
@@ -3767,27 +3806,308 @@
         onHoldList: [],
         totalWaiting: 5,
         totalOnHold: 0
-      };
+      },
+      2: {
+        id: 2,
+        hospital: "District Combined Hospital • Sanjay Nagar",
+        chamber: "Chamber #206",
+        doctor: "Dr. Rohan Mehta",
+        specialty: "Cardiology • Senior Consultant",
+        doctorPhoto: "images/doctors/dr-rohan-mehta.jpg",
+        avgConsultationMins: 8,
+        delayMinutes: 0,
+        emergencyReason: "",
+        emergencyActive: false,
+        activeToken: {
+          tokenId: "CD-2061",
+          patientName: "Harish Chandra",
+          age: 61,
+          gender: "Male",
+          phone: "+91 98711 00213",
+          problem: "Post-angioplasty checkup & ECG review",
+          status: "IN_CHAMBER",
+          holdCount: 0,
+          elapsedMins: 5
+        },
+        waitingQueue: [
+          { tokenId: "CD-2062", patientName: "Manju Saxena", age: 54, gender: "Female", phone: "+91 98112 33441", status: "WAITING", holdCount: 0, queuePosition: 1, estimatedWaitMins: 3, estimatedTime: "8:25 AM" },
+          { tokenId: "CD-2063", patientName: "Virender Tyagi", age: 48, gender: "Male", phone: "+91 98223 44552", status: "WAITING", holdCount: 0, queuePosition: 2, estimatedWaitMins: 11, estimatedTime: "8:33 AM" },
+          { tokenId: "CD-2064", patientName: "Sarita Bhardwaj", age: 67, gender: "Female", phone: "+91 98334 55663", status: "WAITING", holdCount: 0, queuePosition: 3, estimatedWaitMins: 19, estimatedTime: "8:41 AM" },
+          { tokenId: "CD-2065", patientName: "Deepak Agarwal", age: 52, gender: "Male", phone: "+91 98445 66774", status: "WAITING", holdCount: 0, queuePosition: 4, estimatedWaitMins: 27, estimatedTime: "8:49 AM" }
+        ],
+        onHoldList: [
+          { tokenId: "CD-2059", patientName: "Om Prakash", holdCount: 1, status: "ON_HOLD" }
+        ],
+        totalWaiting: 4,
+        totalOnHold: 1
+      },
+      3: {
+        id: 3,
+        hospital: "New District Women's Hospital • OPD Wing",
+        chamber: "Chamber #302",
+        doctor: "Dr. Anita Gupta",
+        specialty: "Dermatology • OPD Specialist",
+        doctorPhoto: "images/doctors/dr-anita-gupta.jpg",
+        avgConsultationMins: 5,
+        delayMinutes: 0,
+        emergencyReason: "",
+        emergencyActive: false,
+        activeToken: {
+          tokenId: "DM-3021",
+          patientName: "Meenakshi Joshi",
+          age: 31,
+          gender: "Female",
+          phone: "+91 98991 22310",
+          problem: "Acute allergic dermatitis & skin rash",
+          status: "IN_CHAMBER",
+          holdCount: 0,
+          elapsedMins: 3
+        },
+        waitingQueue: [
+          { tokenId: "DM-3022", patientName: "Neha Aggarwal", age: 26, gender: "Female", phone: "+91 98771 99882", status: "WAITING", holdCount: 0, queuePosition: 1, estimatedWaitMins: 2, estimatedTime: "8:22 AM" },
+          { tokenId: "DM-3023", patientName: "Aakash Rawat", age: 38, gender: "Male", phone: "+91 98662 88773", status: "WAITING", holdCount: 0, queuePosition: 2, estimatedWaitMins: 7, estimatedTime: "8:27 AM" },
+          { tokenId: "DM-3024", patientName: "Priyanka Sethi", age: 24, gender: "Female", phone: "+91 98553 77664", status: "WAITING", holdCount: 0, queuePosition: 3, estimatedWaitMins: 12, estimatedTime: "8:32 AM" },
+          { tokenId: "DM-3025", patientName: "Gaurav Bansal", age: 41, gender: "Male", phone: "+91 98444 66555", status: "WAITING", holdCount: 0, queuePosition: 4, estimatedWaitMins: 17, estimatedTime: "8:37 AM" }
+        ],
+        onHoldList: [],
+        totalWaiting: 4,
+        totalOnHold: 0
+      },
+      4: {
+        id: 4,
+        hospital: "ESI Hospital • Sahibabad",
+        chamber: "Chamber #115",
+        doctor: "Dr. Suresh Verma",
+        specialty: "Orthopedic • Joint & Spine Specialist",
+        doctorPhoto: "images/doctors/dr-suresh-verma.jpg",
+        avgConsultationMins: 7,
+        delayMinutes: 0,
+        emergencyReason: "",
+        emergencyActive: false,
+        activeToken: {
+          tokenId: "OR-1151",
+          patientName: "Baldev Singh",
+          age: 58,
+          gender: "Male",
+          phone: "+91 98101 44556",
+          problem: "Knee arthritic flare & ligament stiffness",
+          status: "IN_CHAMBER",
+          holdCount: 0,
+          elapsedMins: 6
+        },
+        waitingQueue: [
+          { tokenId: "OR-1152", patientName: "Sunil Kumar", age: 44, gender: "Male", phone: "+91 98202 55667", status: "WAITING", holdCount: 0, queuePosition: 1, estimatedWaitMins: 1, estimatedTime: "8:21 AM" },
+          { tokenId: "OR-1153", patientName: "Geeta Yadav", age: 50, gender: "Female", phone: "+91 98303 66778", status: "WAITING", holdCount: 0, queuePosition: 2, estimatedWaitMins: 8, estimatedTime: "8:28 AM" },
+          { tokenId: "OR-1154", patientName: "Raman Chauhan", age: 36, gender: "Male", phone: "+91 98404 77889", status: "WAITING", holdCount: 0, queuePosition: 3, estimatedWaitMins: 15, estimatedTime: "8:35 AM" },
+          { tokenId: "OR-1155", patientName: "Anil Chaudhary", age: 63, gender: "Male", phone: "+91 98505 88990", status: "WAITING", holdCount: 0, queuePosition: 4, estimatedWaitMins: 22, estimatedTime: "8:42 AM" }
+        ],
+        onHoldList: [],
+        totalWaiting: 4,
+        totalOnHold: 0
+      },
+      5: {
+        id: 5,
+        hospital: "MMG District Hospital • Pediatrics Wing",
+        chamber: "Chamber #108",
+        doctor: "Dr. Kavita Nair",
+        specialty: "Pediatrics • Child Specialist",
+        doctorPhoto: "images/doctors/dr-kavita-nair.jpg",
+        avgConsultationMins: 6,
+        delayMinutes: 0,
+        emergencyReason: "",
+        emergencyActive: false,
+        activeToken: {
+          tokenId: "PD-1081",
+          patientName: "Aadhya Sharma (Baby)",
+          age: 4,
+          gender: "Female",
+          phone: "+91 98711 55443",
+          problem: "Viral fever, cold and mild wheezing",
+          status: "IN_CHAMBER",
+          holdCount: 0,
+          elapsedMins: 3
+        },
+        waitingQueue: [
+          { tokenId: "PD-1082", patientName: "Vivaan Malhotra (Child)", age: 6, gender: "Male", phone: "+91 98112 66554", status: "WAITING", holdCount: 0, queuePosition: 1, estimatedWaitMins: 3, estimatedTime: "8:23 AM" },
+          { tokenId: "PD-1083", patientName: "Ananya Dixit (Child)", age: 8, gender: "Female", phone: "+91 98223 77665", status: "WAITING", holdCount: 0, queuePosition: 2, estimatedWaitMins: 9, estimatedTime: "8:29 AM" },
+          { tokenId: "PD-1084", patientName: "Reyansh Gupta (Child)", age: 2, gender: "Male", phone: "+91 98334 88776", status: "WAITING", holdCount: 0, queuePosition: 3, estimatedWaitMins: 15, estimatedTime: "8:35 AM" }
+        ],
+        onHoldList: [],
+        totalWaiting: 3,
+        totalOnHold: 0
+      },
+      6: {
+        id: 6,
+        hospital: "Community Health Centre (CHC) • Dasna",
+        chamber: "Chamber #214",
+        doctor: "Dr. Arun Tiwari",
+        specialty: "ENT Specialist • Head & Neck",
+        doctorPhoto: "images/doctors/dr-arun-tiwari.jpg",
+        avgConsultationMins: 5,
+        delayMinutes: 0,
+        emergencyReason: "",
+        emergencyActive: false,
+        activeToken: {
+          tokenId: "ET-2141",
+          patientName: "Manoj Rathore",
+          age: 45,
+          gender: "Male",
+          phone: "+91 98991 33221",
+          problem: "Throat infection, ear ache & congestion",
+          status: "IN_CHAMBER",
+          holdCount: 0,
+          elapsedMins: 2
+        },
+        waitingQueue: [
+          { tokenId: "ET-2142", patientName: "Simran Kaur", age: 28, gender: "Female", phone: "+91 98771 44332", status: "WAITING", holdCount: 0, queuePosition: 1, estimatedWaitMins: 3, estimatedTime: "8:23 AM" },
+          { tokenId: "ET-2143", patientName: "Kishore Pandey", age: 53, gender: "Male", phone: "+91 98662 55443", status: "WAITING", holdCount: 0, queuePosition: 2, estimatedWaitMins: 8, estimatedTime: "8:28 AM" },
+          { tokenId: "ET-2144", patientName: "Rekha Rani", age: 39, gender: "Female", phone: "+91 98553 66554", status: "WAITING", holdCount: 0, queuePosition: 3, estimatedWaitMins: 13, estimatedTime: "8:33 AM" }
+        ],
+        onHoldList: [],
+        totalWaiting: 3,
+        totalOnHold: 0
+      }
+    };
+
+    function getSpecialistQueue(docId) {
+      const id = parseInt(docId) || 1;
+      if (id === 1) {
+        if (currentLiveQueue) {
+          if (!currentLiveQueue.doctorPhoto) currentLiveQueue.doctorPhoto = "images/doctors/dr-priya-sharma.jpg";
+          if (!currentLiveQueue.hospital) currentLiveQueue.hospital = "MMG District Hospital • OPD Wing 2";
+          return currentLiveQueue;
+        }
+        return SPECIALIST_QUEUES[1];
+      }
+      return SPECIALIST_QUEUES[id] || SPECIALIST_QUEUES[1];
+    }
+
+    function onSelectSpecialistQueue(docId) {
+      selectedSpecialistId = parseInt(docId) || 1;
+      const sel = document.getElementById('kioskSpecialistSelect');
+      if (sel && parseInt(sel.value) !== selectedSpecialistId) {
+        sel.value = selectedSpecialistId;
+      }
+      const q = getSpecialistQueue(selectedSpecialistId);
+      renderQueueUI(q);
+      playChime('call');
+      showSpecialistToast(q);
+    }
+
+    function viewSpecialistQueue(docId) {
+      onSelectSpecialistQueue(docId);
+      const kiosk = document.getElementById('kioskContainer');
+      if (kiosk) {
+        kiosk.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        kiosk.classList.add('ring-4', 'ring-blue-500/70', 'scale-[1.01]');
+        setTimeout(() => {
+          kiosk.classList.remove('ring-4', 'ring-blue-500/70', 'scale-[1.01]');
+        }, 1800);
+      }
+    }
+
+    function bookWithCurrentSpecialist() {
+      bookWithDoctor(selectedSpecialistId);
+    }
+
+    function showSpecialistToast(q) {
+      if (!q) return;
+      let toast = document.getElementById('specialistSwitchToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'specialistSwitchToast';
+        toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-slate-900/95 border border-blue-500/50 text-white px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-none';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `
+        <div class="w-9 h-9 rounded-xl overflow-hidden border border-blue-400/50 shrink-0">
+          <img src="${q.doctorPhoto || 'images/doctors/dr-priya-sharma.jpg'}" alt="${q.doctor}" class="w-full h-full object-cover"/>
+        </div>
+        <div>
+          <div class="text-[11px] font-bold text-blue-400 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            LIVE QUEUE SWITCHED
+          </div>
+          <p class="text-xs font-bold text-white">${q.doctor} <span class="text-slate-400 font-normal">(${q.chamber})</span></p>
+          <p class="text-[10px] text-slate-300">${q.specialty} • ${q.waitingQueue ? q.waitingQueue.length : 0} waiting in line</p>
+        </div>
+      `;
+      toast.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 3500);
+    }
+
+    function getLocalFallbackQueueState() {
+      return SPECIALIST_QUEUES[1];
     }
 
     async function fetchLiveQueueState() {
       try {
         const res = await fetch('/api/queue/state');
         if (res.ok) {
-          currentLiveQueue = await res.json();
-          renderQueueUI(currentLiveQueue);
+          const serverState = await res.json();
+          currentLiveQueue = serverState;
+          if (SPECIALIST_QUEUES && SPECIALIST_QUEUES[1]) {
+            SPECIALIST_QUEUES[1] = Object.assign({}, SPECIALIST_QUEUES[1], serverState);
+          }
+          if (selectedSpecialistId === 1) {
+            renderQueueUI(currentLiveQueue);
+          }
           return currentLiveQueue;
         }
       } catch (e) {}
       if (!currentLiveQueue) {
         currentLiveQueue = getLocalFallbackQueueState();
       }
-      renderQueueUI(currentLiveQueue);
+      if (selectedSpecialistId === 1) {
+        renderQueueUI(currentLiveQueue);
+      }
       return currentLiveQueue;
     }
 
     function renderQueueUI(data) {
       if (!data) return;
+
+      // 0. Update Doctor Profile Info on Kiosk Header
+      const hospName = document.getElementById('kioskHospitalName');
+      const docPhoto = document.getElementById('kioskDoctorPhoto');
+      const docName = document.getElementById('kioskDoctorName');
+      const docSpec = document.getElementById('kioskDoctorSpec');
+      const chamberBadge = document.getElementById('kioskChamberBadge');
+      const docAvg = document.getElementById('kioskDoctorAvg');
+      const bookBtnText = document.getElementById('kioskBookBtnText');
+      const syncChamberText = document.getElementById('kioskSyncChamberText');
+
+      if (hospName && data.hospital) {
+        hospName.textContent = data.hospital;
+      }
+      if (docPhoto) {
+        docPhoto.src = data.doctorPhoto || (selectedSpecialistId === 2 ? 'images/doctors/dr-rohan-mehta.jpg' : selectedSpecialistId === 3 ? 'images/doctors/dr-anita-gupta.jpg' : selectedSpecialistId === 4 ? 'images/doctors/dr-suresh-verma.jpg' : selectedSpecialistId === 5 ? 'images/doctors/dr-kavita-nair.jpg' : selectedSpecialistId === 6 ? 'images/doctors/dr-arun-tiwari.jpg' : 'images/doctors/dr-priya-sharma.jpg');
+        docPhoto.alt = data.doctor || "Doctor Photo";
+      }
+      if (docName) {
+        docName.textContent = data.doctor || "Dr. Priya Sharma";
+      }
+      if (docSpec) {
+        docSpec.textContent = data.specialty || "General Medicine";
+      }
+      if (chamberBadge) {
+        chamberBadge.textContent = `● ${data.chamber || "Chamber #104"}`;
+      }
+      if (docAvg) {
+        docAvg.textContent = `Avg ${data.avgConsultationMins || 6}m / patient`;
+      }
+      if (bookBtnText) {
+        const shortDocName = data.doctor ? data.doctor.replace('Dr. ', 'Dr. ') : 'Specialist';
+        bookBtnText.textContent = `Book Appointment with ${shortDocName} & Get Token`;
+      }
+      if (syncChamberText) {
+        syncChamberText.textContent = `Real-time sync with ${data.chamber || 'Chamber #104'}`;
+      }
 
       // 1. Emergency Delay Banner
       const delayBanner = document.getElementById('kioskDelayBanner');
@@ -3820,6 +4140,10 @@
         if (servingElapsed) {
           servingElapsed.textContent = `${data.activeToken.elapsedMins || 4} mins`;
         }
+      } else {
+        if (servingToken) servingToken.textContent = '#--';
+        if (servingPatient) servingPatient.textContent = 'Next patient being prepared...';
+        if (servingElapsed) servingElapsed.textContent = '0 mins';
       }
 
       // 3. Patient View - On-Hold Buffer Section
@@ -3833,7 +4157,7 @@
               <div class="flex items-center gap-2">
                 <span class="font-mono font-bold text-amber-300">#${item.tokenId}</span>
                 <span class="text-white font-medium">${item.patientName}</span>
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200">Hold ${item.holdCount}/2</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-200">Hold ${item.holdCount || 1}/2</span>
               </div>
               <span class="text-[10px] font-semibold text-amber-300">Buffer ~12m</span>
             </div>
@@ -3846,25 +4170,33 @@
 
       // 4. Patient View - Up Next Pipeline
       const upNextList = document.getElementById('kioskUpNextList');
-      if (upNextList && data.waitingQueue) {
-        upNextList.innerHTML = data.waitingQueue.slice(0, 4).map((p, idx) => {
-          const isHold = p.status === 'ON_HOLD';
-          const isFirst = idx === 0;
-          return `
-            <div class="flex items-center justify-between ${isHold ? 'bg-amber-950/40 border-amber-600/40' : (isFirst ? 'bg-slate-900/80 border-slate-700/80' : 'bg-slate-900/40 border-slate-800/40')} px-3.5 py-2 rounded-xl border text-xs transition-colors">
-              <div class="flex items-center gap-2 font-mono">
-                <span class="${isFirst ? 'text-amber-400 font-bold' : 'text-slate-500'}">${idx + 1}.</span>
-                <span class="font-bold ${isHold ? 'text-amber-300' : 'text-white'}">#${p.tokenId}</span>
-                <span class="text-[11px] font-sans ${isHold ? 'text-amber-200 font-medium' : 'text-slate-300'}">${p.patientName}</span>
-                ${isHold ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-200 font-bold">Shifted 2 Slots</span>` : ''}
+      if (upNextList) {
+        if (data.waitingQueue && data.waitingQueue.length > 0) {
+          upNextList.innerHTML = data.waitingQueue.slice(0, 4).map((p, idx) => {
+            const isHold = p.status === 'ON_HOLD';
+            const isFirst = idx === 0;
+            return `
+              <div class="flex items-center justify-between ${isHold ? 'bg-amber-950/40 border-amber-600/40' : (isFirst ? 'bg-slate-900/80 border-slate-700/80' : 'bg-slate-900/40 border-slate-800/40')} px-3.5 py-2 rounded-xl border text-xs transition-colors">
+                <div class="flex items-center gap-2 font-mono">
+                  <span class="${isFirst ? 'text-amber-400 font-bold' : 'text-slate-500'}">${idx + 1}.</span>
+                  <span class="font-bold ${isHold ? 'text-amber-300' : 'text-white'}">#${p.tokenId}</span>
+                  <span class="text-[11px] font-sans ${isHold ? 'text-amber-200 font-medium' : 'text-slate-300'}">${p.patientName}</span>
+                  ${isHold ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-200 font-bold">Shifted 2 Slots</span>` : ''}
+                </div>
+                <span class="${isFirst ? 'font-semibold text-amber-400' : 'text-slate-400'} font-mono">~${p.estimatedWaitMins || (idx + 1) * (data.avgConsultationMins || 6)} mins</span>
               </div>
-              <span class="${isFirst ? 'font-semibold text-amber-400' : 'text-slate-400'} font-mono">~${p.estimatedWaitMins || (idx + 1) * 6} mins</span>
+            `;
+          }).join('');
+        } else {
+          upNextList.innerHTML = `
+            <div class="p-3 text-center text-slate-500 text-xs bg-slate-900/40 rounded-xl border border-slate-800">
+              No patients currently waiting in line. Tokens available immediately.
             </div>
           `;
-        }).join('');
+        }
       }
 
-      // 5. Doctor Console View Data
+      // 5. Doctor Console View Data (if present in DOM)
       const docActiveToken = document.getElementById('docActiveToken');
       const docActiveName = document.getElementById('docActiveName');
       const docActiveMeta = document.getElementById('docActiveMeta');
@@ -3897,7 +4229,7 @@
         docWaitingList.innerHTML = data.waitingQueue.map((item, i) => `
           <div class="flex items-center justify-between text-[11px] p-1.5 rounded-lg bg-slate-950/60 border border-slate-800/80">
             <span class="font-mono text-slate-300"><strong class="text-white">${i + 1}.</strong> #${item.tokenId} - ${item.patientName}</span>
-            <span class="text-slate-400 font-mono">${item.status === 'ON_HOLD' ? '⏸️ ON HOLD' : `~${item.estimatedWaitMins || (i + 1) * 6}m`}</span>
+            <span class="text-slate-400 font-mono">${item.status === 'ON_HOLD' ? '⏸️ ON HOLD' : `~${item.estimatedWaitMins || (i + 1) * (data.avgConsultationMins || 6)}m`}</span>
           </div>
         `).join('');
       }
@@ -5517,13 +5849,20 @@ Be concise, warm and helpful. Support Hindi or English.`;
               console.log('[SmartQueue Portal] Real-time queue event received from Doctor Console:', event.data.action);
               if (event.data.state) {
                 currentLiveQueue = event.data.state;
-                renderQueueUI(currentLiveQueue);
+                if (SPECIALIST_QUEUES && SPECIALIST_QUEUES[1]) {
+                  SPECIALIST_QUEUES[1] = Object.assign({}, SPECIALIST_QUEUES[1], event.data.state);
+                }
+                if (selectedSpecialistId === 1) {
+                  renderQueueUI(currentLiveQueue);
+                }
               } else {
                 fetchLiveQueueState();
               }
-              if (event.data.action === 'CALL_NEXT') playChime('call');
-              else if (event.data.action === 'HOLD_TOKEN') playChime('hold');
-              else if (event.data.action === 'MARK_ABSENT') playChime('alert');
+              if (selectedSpecialistId === 1) {
+                if (event.data.action === 'CALL_NEXT') playChime('call');
+                else if (event.data.action === 'HOLD_TOKEN') playChime('hold');
+                else if (event.data.action === 'MARK_ABSENT') playChime('alert');
+              }
             }
           };
         }
