@@ -800,9 +800,6 @@
 
     .wrapper:has(.print-button:focus) .receipt-wrapper,
     .wrapper.is-printed .receipt-wrapper {
-      transform: translateY(36px) scale(1.02);
-      clip-path: inset(-20% -100px -100px -100px);
-      z-index: 5;
       animation:
         print 1.2s 1 forwards ease-in,
         display 0.4s 1 forwards cubic-bezier(0, 0.63, 0.96, 1.1);
@@ -838,6 +835,10 @@
     }
 
     @keyframes print {
+      0% {
+        transform: translateY(-100%);
+        clip-path: inset(100% -100px -100px -100px);
+      }
       100% {
         transform: translateY(32px);
         clip-path: inset(-20% -100px -100px -100px);
@@ -845,6 +846,10 @@
     }
 
     @keyframes display {
+      0% {
+        transform: translateY(32px);
+        clip-path: inset(-20% -100px -100px -100px);
+      }
       30% {
         transform: translateY(48px) rotate3d(1, 0, 1, -3deg);
       }
@@ -854,6 +859,7 @@
       100% {
         z-index: 5;
         transform: translateY(36px) scale(1.02);
+        clip-path: inset(-20% -100px -100px -100px);
       }
     }
 
@@ -4975,11 +4981,11 @@
       const localizedGender = appt.patient.gender === 'Female' ? t('gender_female', 'Female') : (appt.patient.gender === 'Male' ? t('gender_male', 'Male') : (appt.patient.gender || '—'));
 
       mount.innerHTML = `
-        <div class="wrapper is-printed" id="ticketWrapper">
+        <div class="wrapper" id="ticketWrapper" data-booking-id="${appt.bookingId}">
           <div class="printer"></div>
 
           <div class="printer-display">
-            <span class="printer-message"> ${t('ticket_dispensed', 'Token Dispensed')} #${appt.bookingId}</span>
+            <span class="printer-message"> ${t('ticket_click_print', 'Click to print')}</span>
             <div class="letter-wrapper">
               <span class="letter">P</span>
               <span class="letter">r</span>
@@ -5296,15 +5302,27 @@
       // Show and render printer ticket for the active appointment
       if (printerSection) {
         printerSection.classList.remove('hidden');
-        renderPrinterTicket(state.appointments[0]);
-        const wrapper = document.getElementById('ticketWrapper');
-        if (wrapper && !wrapper.classList.contains('is-printed')) {
-          wrapper.classList.add('is-printed');
-        }
-        if (justBooked) {
+        const existingWrapper = document.getElementById('ticketWrapper');
+        const activeAppt = state.appointments[0];
+        const isCurrentApptMounted = existingWrapper && existingWrapper.dataset.bookingId === activeAppt.bookingId;
+
+        if (justBooked || !isCurrentApptMounted) {
+          renderPrinterTicket(activeAppt);
           setTimeout(() => {
             replayPrinterAnimation();
-          }, 450);
+          }, justBooked ? 450 : 250);
+        } else {
+          // If already mounted, ensure it remains in printed dispensed state and never disappears
+          if (existingWrapper && !existingWrapper.classList.contains('is-printed')) {
+            existingWrapper.classList.add('is-printed');
+          }
+          // Update dynamic status without resetting printer DOM
+          const statusCell = existingWrapper?.querySelector('.receipt-total td:last-child');
+          if (statusCell && activeAppt) {
+            statusCell.innerHTML = activeAppt.arrivalStatus === 'ARRIVED' 
+              ? '🟢 ARRIVED (IN WAITING HALL)' 
+              : t('ticket_status_val', 'CONFIRMED &amp; ACTIVE');
+          }
         }
       }
 
